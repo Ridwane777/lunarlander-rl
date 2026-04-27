@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.distributions import Categorical
-import numpy as np
 
 class PolicyNetwork(nn.Module):
     def __init__(self, obs_dim, n_actions, hidden=128):

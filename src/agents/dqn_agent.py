@@ -1,8 +1,6 @@
 import torch
 import torch.nn as nn
-import numpy as np
 import torch.optim as optim
-import copy
 from src.utils.replay_buffer import ReplayBuffer
 
 class QNetwork(nn.Module):
@@ -41,13 +39,12 @@ class DQNAgent:
         self.target_net.eval()
 
         self.optimizer = optim.Adam(self.q_net.parameters(), lr=config["lr"])
-        self.buffer = ReplayBuffer(config["buffer_size"])
+        self.buffer = ReplayBuffer(config["buffer_size"], self.device)
         self.step_count = 0
 
     def select_action(self, obs):
-        # Epsilon-greedy : exploration ou exploitation
-        if np.random.rand() < self.epsilon:
-            return np.random.randint(self.n_actions)
+        if torch.rand(1).item() < self.epsilon:
+            return torch.randint(self.n_actions, (1,)).item()
         obs_t = torch.FloatTensor(obs).unsqueeze(0).to(self.device)
         with torch.no_grad():
             q_values = self.q_net(obs_t)
@@ -60,20 +57,16 @@ class DQNAgent:
         if len(self.buffer) < self.batch_size:
             return None
 
-        states, actions, rewards, next_states, dones = self.buffer.sample(self.batch_size)
-
-        states_t      = torch.FloatTensor(states).to(self.device)
-        actions_t     = torch.LongTensor(actions).to(self.device)
-        rewards_t     = torch.FloatTensor(rewards).to(self.device)
-        next_states_t = torch.FloatTensor(next_states).to(self.device)
-        dones_t       = torch.FloatTensor(dones).to(self.device)
+        # Les tenseurs arrivent déjà sur le bon device
+        states_t, actions_t, rewards_t, next_states_t, dones_t = self.buffer.sample(self.batch_size)
 
         # Q-valeurs prédites par le réseau principal
         q_values = self.q_net(states_t).gather(1, actions_t.unsqueeze(1)).squeeze(1)
 
-        # Cibles calculées par le target network
+        # Double DQN : q_net choisit l'action, target_net évalue
         with torch.no_grad():
-            next_q = self.target_net(next_states_t).max(1)[0]
+            best_actions = self.q_net(next_states_t).argmax(1)
+            next_q = self.target_net(next_states_t).gather(1, best_actions.unsqueeze(1)).squeeze(1)
             targets = rewards_t + self.gamma * next_q * (1 - dones_t)
 
         # Loss et backpropagation

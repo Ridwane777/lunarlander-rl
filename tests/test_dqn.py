@@ -1,5 +1,4 @@
 import gymnasium as gym
-import numpy as np
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -45,6 +44,7 @@ logger = EpisodeLogger("logs/dqn_soft.csv")
 episode = 0
 ep_return = 0
 ep_len = 0
+ep_returns = []
 
 for step in range(500000):
     action = agent.select_action(obs)
@@ -59,12 +59,17 @@ for step in range(500000):
     ep_len += 1
 
     if done:
+        ep_returns.append(ep_return)
         logger.log(episode, ep_return, ep_len, terminated, truncated, info)
-        print(f"Episode {episode:4d} | reward={ep_return:8.1f} | epsilon={agent.epsilon:.3f} | steps={ep_len:4d} | loss={loss:.3f}" if loss else f"Episode {episode:4d} | reward={ep_return:8.1f} | epsilon={agent.epsilon:.3f} | steps={ep_len:4d} | filling buffer...")
+
+        if loss:
+            print(f"Episode {episode:4d} | reward={ep_return:8.1f} | epsilon={agent.epsilon:.3f} | steps={ep_len:4d} | loss={loss:.3f}")
+        else:
+            print(f"Episode {episode:4d} | reward={ep_return:8.1f} | epsilon={agent.epsilon:.3f} | steps={ep_len:4d} | filling buffer...")
 
         # Critère de succès
         if episode >= 100:
-            mean_100 = np.mean([ep_return])
+            mean_100 = sum(ep_returns[-100:]) / 100
             if mean_100 >= 200:
                 print(f"Resolu a l'episode {episode} !")
                 break
