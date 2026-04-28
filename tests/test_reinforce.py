@@ -19,6 +19,7 @@ logger = EpisodeLogger("logs/reinforce.csv")
 episode = 0
 ep_return = 0
 ep_len = 0
+ep_returns = []
 
 for step in range(200000):
     action = agent.select_action(obs)
@@ -29,8 +30,16 @@ for step in range(200000):
 
     if terminated or truncated:
         loss = agent.update()
+        ep_returns.append(ep_return)
         logger.log(episode, ep_return, ep_len, terminated, truncated, info)
         print(f"Episode {episode} | reward={ep_return:.1f} | loss={loss:.3f}")
+
+        if episode >= 100:
+            mean_100 = sum(ep_returns[-100:]) / 100
+            if mean_100 >= 200:
+                print(f"Resolu a l'episode {episode} !")
+                break
+
         ep_return = 0
         ep_len = 0
         episode += 1
