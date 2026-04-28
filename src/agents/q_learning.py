@@ -17,8 +17,8 @@ class QLearningAgent:
         self.q_table = defaultdict(lambda: np.zeros(n_actions))
 
     def discretize(self, obs):
-        # Exemple simple de discrétisation
-        return tuple(np.round(obs, 1))  # tu peux améliorer
+        bins = np.array([0.5, 0.5, 0.2, 0.2, 0.1, 0.1, 1.0, 1.0])
+        return tuple((obs / bins).astype(int))
 
     def select_action(self, obs):
         state = self.discretize(obs)
