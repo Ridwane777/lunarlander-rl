@@ -25,7 +25,7 @@ Metriques principales:
 - taux de `landed`, `crash`, `timeout`
 - reward moyen global
 
-Resultats (extraits de `plots/method_comparison/summary_metrics.csv`):
+Resultats (extraits de `logs/summary_metrics.csv`):
 
 | Methode | Episodes | Mean reward | Mean last 100 | Solved episode | Landed rate | Crash rate |
 |---|---:|---:|---:|---|---:|---:|
@@ -37,10 +37,8 @@ Resultats (extraits de `plots/method_comparison/summary_metrics.csv`):
 
 - `plots/method_comparison/01_rewards_trend.png`: rewards bruts + moyenne mobile
 - `plots/method_comparison/02_mean100.png`: moyenne glissante sur 100 episodes
-- `plots/method_comparison/03_rewards_boxplot.png`: distribution des rewards
-- `plots/method_comparison/04_rewards_histograms.png`: histogrammes des rewards
-- `plots/method_comparison/05_stability_rolling_std.png`: stabilite de l'apprentissage
-- `plots/method_comparison/06_termination_causes.png`: causes de fin d'episode
+- `plots/method_comparison/03_rewards_boxplot.png`: comparaison simple (mean_last_100 + landed rate)
+- `plots/method_comparison/04_termination_causes.png`: causes de fin d'episode
 
 ## Conclusion
 

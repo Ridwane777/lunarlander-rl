@@ -161,50 +161,39 @@ def plot_mean100(output_dir, dataset):
     plt.close(fig)
 
 
-def plot_boxplot_rewards(output_dir, dataset):
+def plot_simple_method_comparison(output_dir, dataset):
+    methods = list(dataset.keys())
+    mean_last_100 = []
+    landed_rate = []
+
+    for method in methods:
+        rewards = dataset[method]["rewards"]
+        tail = rewards[-100:] if len(rewards) >= 100 else rewards
+        mean_last_100.append(sum(tail) / len(tail))
+        dist = cause_distribution(dataset[method]["causes"])
+        landed_rate.append(100.0 * dist.get("landed", 0) / len(dataset[method]["causes"]))
+
+    x = list(range(len(methods)))
+    width = 0.35
     fig, ax = plt.subplots(figsize=(10, 6))
-    labels = list(dataset.keys())
-    values = [dataset[k]["rewards"] for k in labels]
-    ax.boxplot(values, tick_labels=labels, showmeans=True)
-    ax.axhline(200, color="#444", linestyle="--", linewidth=1.0)
-    ax.set_title("Distribution des rewards (boxplot)")
-    ax.set_ylabel("Reward total")
+    bars1 = ax.bar([i - width / 2 for i in x], mean_last_100, width=width, label="Mean last 100")
+    bars2 = ax.bar([i + width / 2 for i in x], landed_rate, width=width, label="Landed rate (%)")
+
+    ax.axhline(200, color="#444", linestyle="--", linewidth=1.0, label="Seuil solve (200)")
+    ax.set_xticks(x)
+    ax.set_xticklabels(methods)
+    ax.set_ylabel("Valeur")
+    ax.set_title("Comparaison simple des methodes")
     ax.grid(True, axis="y", alpha=0.25)
+    ax.legend()
+
+    for bars in (bars1, bars2):
+        for bar in bars:
+            h = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width() / 2, h + 2, f"{h:.1f}", ha="center", va="bottom", fontsize=8)
+
     fig.tight_layout()
     fig.savefig(os.path.join(output_dir, "03_rewards_boxplot.png"), dpi=160)
-    plt.close(fig)
-
-
-def plot_hist_rewards(output_dir, dataset):
-    fig, axes = plt.subplots(1, len(dataset), figsize=(6 * len(dataset), 5), sharey=True)
-    if len(dataset) == 1:
-        axes = [axes]
-    for ax, (name, data) in zip(axes, dataset.items()):
-        ax.hist(data["rewards"], bins=30, alpha=0.8)
-        ax.axvline(mean(data["rewards"]), color="#d62728", linewidth=2, linestyle="--", label="Moyenne")
-        ax.axvline(200, color="#444", linewidth=1.0, linestyle=":", label="Seuil 200")
-        ax.set_title(name)
-        ax.set_xlabel("Reward")
-        ax.grid(True, axis="y", alpha=0.25)
-        ax.legend()
-    axes[0].set_ylabel("Frequence")
-    fig.suptitle("Histogramme des rewards")
-    fig.tight_layout()
-    fig.savefig(os.path.join(output_dir, "04_rewards_histograms.png"), dpi=160)
-    plt.close(fig)
-
-
-def plot_stability(output_dir, dataset, window=30):
-    fig, ax = plt.subplots(figsize=(12, 6))
-    for name, data in dataset.items():
-        ax.plot(data["episodes"], rolling_std(data["rewards"], window), linewidth=2, label=name)
-    ax.set_title(f"Stabilite de l'apprentissage (ecart-type roulant, fenetre={window})")
-    ax.set_xlabel("Episode")
-    ax.set_ylabel("Ecart-type roulant du reward")
-    ax.grid(True, alpha=0.3)
-    ax.legend()
-    fig.tight_layout()
-    fig.savefig(os.path.join(output_dir, "05_stability_rolling_std.png"), dpi=160)
     plt.close(fig)
 
 
@@ -229,7 +218,7 @@ def plot_termination_causes(output_dir, dataset):
     ax.grid(True, axis="y", alpha=0.25)
     ax.legend()
     fig.tight_layout()
-    fig.savefig(os.path.join(output_dir, "06_termination_causes.png"), dpi=160)
+    fig.savefig(os.path.join(output_dir, "04_termination_causes.png"), dpi=160)
     plt.close(fig)
 
 
@@ -258,16 +247,16 @@ def main():
 
     os.makedirs(args.output_dir, exist_ok=True)
 
-    plot_rewards_with_trend(args.output_dir, dataset, window=20)
-    plot_mean100(args.output_dir, dataset)
-    plot_boxplot_rewards(args.output_dir, dataset)
-    plot_hist_rewards(args.output_dir, dataset)
-    plot_stability(args.output_dir, dataset, window=30)
-    plot_termination_causes(args.output_dir, dataset)
-
     summaries = [build_summary(name, data) for name, data in dataset.items()]
     summaries.sort(key=lambda x: x["mean_last_100"], reverse=True)
-    save_summary_csv(os.path.join(args.output_dir, "summary_metrics.csv"), summaries)
+
+    plot_rewards_with_trend(args.output_dir, dataset, window=20)
+    plot_mean100(args.output_dir, dataset)
+    plot_simple_method_comparison(args.output_dir, dataset)
+    plot_termination_causes(args.output_dir, dataset)
+    os.makedirs("logs", exist_ok=True)
+    summary_path = os.path.join("logs", "summary_metrics.csv")
+    save_summary_csv(summary_path, summaries)
 
     print("\n=== Classement (mean_last_100) ===")
     for i, row in enumerate(summaries, start=1):
@@ -275,7 +264,8 @@ def main():
             f"{i}. {row['method']:<14} | mean_last_100={row['mean_last_100']:.2f} | "
             f"solved_episode={row['solved_episode']} | landed_rate={100*row['landed_rate']:.1f}%"
         )
-    print(f"\nFigures et tableau sauvegardes dans: {args.output_dir}")
+    print(f"\nFigures sauvegardees dans: {args.output_dir}")
+    print(f"Tableau de metriques sauvegarde dans: {summary_path}")
 
 
 if __name__ == "__main__":
