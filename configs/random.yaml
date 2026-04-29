@@ -1,0 +1,8 @@
+env: LunarLander-v3
+algo: random
+seeds: [0, 1, 2, 3, 4]
+max_steps: 50000
+success_threshold: 200
+success_window: 100
+
+hyperparameters: {}
