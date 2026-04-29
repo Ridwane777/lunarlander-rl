@@ -1,0 +1,11 @@
+env: LunarLander-v3
+algo: reinforce
+seeds: [0, 1, 2, 3, 4]
+max_steps: 200000
+success_threshold: 200
+success_window: 100
+
+hyperparameters:
+  gamma: 0.99
+  lr: 0.001
+  hidden: 128
