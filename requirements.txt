@@ -1,4 +1,8 @@
 gymnasium
+gymnasium[box2d]
+gymnasium[other]
 torch
 matplotlib
 numpy
+pyyaml
+moviepy
