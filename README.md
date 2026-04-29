@@ -1,9 +1,4 @@
-# 🚀 LunarLander RL — LunarLander-v3
-
-> **Reinforcement Learning** — Ridwane777 Paris | 2025–2026  
-> Entraînement et évaluation d'agents RL pour l'atterrissage autonome sur la Lune.
-
----
+# LunarLander RL : LunarLander-v3
 
 ## 🎯 Objectif
 
@@ -44,7 +39,7 @@ pip install "gymnasium[box2d]"
 
 ---
 
-## 🧠 Agents Implémentés
+## Agents Implémentés
 
 ### Baselines
 | Agent | Description | Fichier |
@@ -130,7 +125,7 @@ Le DQN utilise **Double DQN** : le réseau principal choisit l'action, le target
 
 ---
 
-## 🏋️ Entraînement
+## Entraînement
 
 ### Entraîner un seul agent
 
@@ -209,7 +204,7 @@ Et dans `videos/tests/` : les vidéos des comportements finaux de chaque agent.
 
 ---
 
-## 🔁 Reproduction Complète (One-Click)
+## Reproduction Complète
 
 Pour régénérer **tous** les résultats (entraînement + évaluation + graphiques + vidéos) :
 
@@ -229,7 +224,7 @@ bash reproduce.sh --seed 0                 # Une seule seed
 
 ---
 
-## 🧪 Tests Unitaires
+## Tests Unitaires
 
 Des scripts de test sont disponibles dans `tests/` pour valider le comportement de chaque agent de manière isolée :
 
@@ -271,7 +266,7 @@ Un agent est considéré comme **résolu** quand la moyenne glissante sur 100 é
 
 ---
 
-## 🔬 Ablation
+## Ablation
 
 L'ablation principale compare deux stratégies de mise à jour du **target network** dans DQN :
 
@@ -290,7 +285,7 @@ python eval.py --models models/dqn_hard_seed*.pth models/dqn_soft_seed*.pth
 
 ---
 
-## 📝 Résultats Observés
+##  Résultats Observés
 
 | Méthode | Mean Reward | Résolution |
 |---|---|---|
