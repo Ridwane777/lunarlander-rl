@@ -103,7 +103,7 @@ if [[ "$EVAL_ONLY" == false ]]; then
     info "Agent : $AGENT | config : $CONFIG"
     python3 train.py --config "$CONFIG" $SEED_ARG
   else
-    info "Entraînement de tous les agents (5 seeds × 5 configs)..."
+    info "Entraînement de tous les agents (5 seeds x 5 configs)..."
     for CONFIG in configs/*.yaml; do
       ALGO=$(basename "$CONFIG" .yaml)
       info "→ $ALGO ..."

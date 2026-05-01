@@ -1,5 +1,6 @@
 import random
 import torch
+import numpy as np
 from collections import deque
 
 class ReplayBuffer:
@@ -14,11 +15,11 @@ class ReplayBuffer:
         batch = random.sample(self.buffer, batch_size)
         states, actions, rewards, next_states, dones = zip(*batch)
         return (
-            torch.tensor(states,      dtype=torch.float32).to(self.device),
-            torch.tensor(actions,     dtype=torch.int64).to(self.device),
-            torch.tensor(rewards,     dtype=torch.float32).to(self.device),
-            torch.tensor(next_states, dtype=torch.float32).to(self.device),
-            torch.tensor(dones,       dtype=torch.float32).to(self.device),
+            torch.tensor(np.array(states),      dtype=torch.float32).to(self.device),
+            torch.tensor(np.array(actions),     dtype=torch.int64).to(self.device),
+            torch.tensor(np.array(rewards),     dtype=torch.float32).to(self.device),
+            torch.tensor(np.array(next_states), dtype=torch.float32).to(self.device),
+            torch.tensor(np.array(dones),       dtype=torch.float32).to(self.device),
         )
 
     def __len__(self):

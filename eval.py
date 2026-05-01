@@ -65,8 +65,11 @@ def main():
         
         config_path = os.path.join(ROOT, "configs", f"{algo}.yaml")
         if not os.path.exists(config_path):
-            print(f"[ATTENTION] Config {config_path} introuvable pour {path}, passage.")
-            continue
+            if algo == "dqn":
+                config_path = os.path.join(ROOT, "configs", "dqn_hard.yaml")
+            if not os.path.exists(config_path):
+                print(f"[ATTENTION] Config introuvable pour {path}, passage.")
+                continue
             
         log_path = evaluate_model(path, config_path, algo, seed, n_episodes=args.n_episodes)
         if log_path:

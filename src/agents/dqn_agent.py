@@ -24,6 +24,8 @@ class DQNAgent:
         self.gamma = config["gamma"]
         self.batch_size = config["batch_size"]
         self.target_update_freq = config["target_update_freq"]
+        self.update_every = config.get("update_every", 1)
+        self.grad_clip = config.get("grad_clip", 10.0)
         self.soft_update = config.get("soft_update", False)
         self.tau = config.get("tau", 0.005)
 
@@ -41,6 +43,7 @@ class DQNAgent:
         self.optimizer = optim.Adam(self.q_net.parameters(), lr=config["lr"])
         self.buffer = ReplayBuffer(config["buffer_size"], self.device)
         self.step_count = 0
+        self.t_step = 0
 
     def select_action(self, obs):
         if torch.rand(1).item() < self.epsilon:
@@ -54,6 +57,10 @@ class DQNAgent:
         self.buffer.push(state, action, reward, next_state, done)
 
     def update(self):
+        self.t_step += 1
+        if self.t_step % self.update_every != 0:
+            return None
+
         if len(self.buffer) < self.batch_size:
             return None
 
@@ -73,11 +80,9 @@ class DQNAgent:
         loss = nn.MSELoss()(q_values, targets)
         self.optimizer.zero_grad()
         loss.backward()
-        nn.utils.clip_grad_norm_(self.q_net.parameters(), 10.0)
+        nn.utils.clip_grad_norm_(self.q_net.parameters(), self.grad_clip)
         self.optimizer.step()
 
-        # Décroissance epsilon
-        self.epsilon = max(self.epsilon_end, self.epsilon * self.epsilon_decay)
 
         # Mise à jour du target network
         self.step_count += 1
@@ -89,3 +94,6 @@ class DQNAgent:
                 self.target_net.load_state_dict(self.q_net.state_dict())
 
         return loss.item()
+
+    def decay_epsilon(self):
+        self.epsilon = max(self.epsilon_end, self.epsilon * self.epsilon_decay)

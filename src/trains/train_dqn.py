@@ -49,6 +49,7 @@ def train_dqn(cfg, seed, log_path):
                     break
 
             ep_return = 0.0; ep_len = 0; ep_losses = []; episode += 1
+            agent.decay_epsilon()
             obs, _ = env.reset()
 
     logger.close(); env.close()

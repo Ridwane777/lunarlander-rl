@@ -1,12 +1,10 @@
-# LunarLander RL : LunarLander-v3
-
-## 🎯 Objectif
+# LunarLander RL — LunarLander-v3
 
 Ce projet implémente et compare plusieurs algorithmes de Reinforcement Learning sur l'environnement **LunarLander-v3** (Gymnasium / Box2D). L'objectif est d'entraîner un module lunaire à atterrir de manière autonome, avec un score moyen ≥ 200 sur 100 épisodes consécutifs.
 
 ---
 
-## ⚙️ Installation
+## Installation
 
 ### Prérequis
 - Python ≥ 3.10
@@ -25,7 +23,6 @@ source venv/bin/activate
 
 # Installer les dépendances
 pip install -r requirements.txt
-pip install "gymnasium[box2d]"
 ```
 
 ### Dépendances
@@ -53,13 +50,13 @@ pip install "gymnasium[box2d]"
 | **Q-Learning** | Méthode tabulaire avec discrétisation de l'espace d'états | `src/agents/q_learning.py` |
 | **REINFORCE** | Policy gradient Monte-Carlo | `src/agents/reinforce_agent.py` |
 | **DQN (hard update)** | Deep Q-Network avec mise à jour périodique du target network | `src/agents/dqn_agent.py` |
-| **DQN (soft update)** | DQN avec mise à jour polyak (τ = 0.005) — **ablation** | `src/agents/dqn_agent.py` |
+| **DQN (soft update)** | DQN avec mise à jour polyak (τ = 0.02) — **ablation** | `src/agents/dqn_agent.py` |
 
 Le DQN utilise **Double DQN** : le réseau principal choisit l'action, le target network évalue la Q-valeur. Il inclut également un **gradient clipping** à 10.0.
 
 ---
 
-## 🗂️ Structure du Projet
+## Structure du Projet
 
 ```
 .
@@ -167,7 +164,7 @@ python train.py --list
 
 ---
 
-## 📊 Évaluation
+## Évaluation
 
 L'évaluation charge les modèles `.pth` depuis `models/`, désactive l'exploration (`ε = 0`), et teste chaque agent sur **100 épisodes déterministes** avec des seeds de test standardisées.
 
@@ -204,7 +201,7 @@ Et dans `videos/tests/` : les vidéos des comportements finaux de chaque agent.
 
 ---
 
-## Reproduction Complète
+## Reproduction Complète (One-Click)
 
 Pour régénérer **tous** les résultats (entraînement + évaluation + graphiques + vidéos) :
 
@@ -224,7 +221,7 @@ bash reproduce.sh --seed 0                 # Une seule seed
 
 ---
 
-## Tests Unitaires
+## 🧪 Tests Unitaires
 
 Des scripts de test sont disponibles dans `tests/` pour valider le comportement de chaque agent de manière isolée :
 
@@ -247,7 +244,7 @@ python tests/test_heuristic.py
 
 ---
 
-## 📈 Métriques et Reproductibilité
+## Métriques et Reproductibilité
 
 ### Ce qui est tracé par épisode (CSV)
 - `total_reward` — retour total de l'épisode
@@ -273,7 +270,7 @@ L'ablation principale compare deux stratégies de mise à jour du **target netwo
 | Stratégie | Paramètre | Config |
 |---|---|---|
 | **Hard update** | Copie complète tous les N pas | `configs/dqn_hard.yaml` |
-| **Soft update** | Mise à jour Polyak (τ = 0.005) | `configs/dqn_soft.yaml` |
+| **Soft update** | Mise à jour Polyak (τ = 0.02) | `configs/dqn_soft.yaml` |
 
 Pour lancer uniquement l'ablation :
 
@@ -285,15 +282,13 @@ python eval.py --models models/dqn_hard_seed*.pth models/dqn_soft_seed*.pth
 
 ---
 
-##  Résultats Observés
+## Résultats Observés (Évaluation sur 100 épisodes)
 
-| Méthode | Mean Reward | Résolution |
+| Méthode | Mean Reward (Évaluation) | Résolution (Entraînement) |
 |---|---|---|
-| DQN (soft update) | ~202 | ✅ Résolu (~180 épisodes) |
-| DQN (hard update) | ~180 | ⚠️ Proche du seuil |
-| REINFORCE | ~65 | ❌ Non résolu |
-| Q-Learning | ~7 | ❌ Non résolu |
-| Heuristic | ~50 | ❌ Non résolu |
-| Random | ~-200 | ❌ Non résolu |
+| **DQN (hard update)** | **218.5 ± 5.4** | ✅ Résolu (5/5 seeds) |
+| **DQN (soft update)** | **210.0 ± 5.4** | ✅ Résolu (5/5 seeds) |
+| REINFORCE | 39.2 ± 11.9 | ❌ Non résolu |
+| Q-Learning | -41.8 ± 16.1 | ❌ Non résolu |
 
-> Résultats obtenus sur seed 0 — seed 4. Le DQN soft update est la seule méthode à franchir systématiquement le seuil de 200.
+> **Conclusion** : L'expérience démontre la nette supériorité du Deep RL (DQN) sur les méthodes tabulaires (Q-Learning) et les algorithmes Policy Gradient simples (REINFORCE) dans des espaces d'états continus. L'ablation montre que la Hard Update génère une politique finale légèrement plus performante que la Soft Update en phase d'exploitation, bien que les deux résolvent l'environnement avec succès.
