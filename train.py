@@ -37,10 +37,12 @@ TRAINERS = {
     "dqn":        train_dqn,
     "dqn_soft":   train_dqn,
     "dqn_hard":   train_dqn,
-    "reinforce":  train_reinforce,
-    "q_learning": train_q_learning,
-    "random":     train_baseline,
-    "heuristic":  train_baseline,
+    "reinforce":     train_reinforce,
+    "reinforce_v2":  train_reinforce,
+    "q_learning":    train_q_learning,
+    "q_learning_v2": train_q_learning,
+    "random":        train_baseline,
+    "heuristic":     train_baseline,
 }
 
 
@@ -56,9 +58,11 @@ def run_config(config_path, seed_override=None):
     trainer  = TRAINERS[algo]
     plot_dir = make_plot_dir(algo)
     results  = []
+    log_paths = []
 
     for seed in seeds:
         log_path = make_log_path(algo, seed)
+        log_paths.append(log_path)
         print(f"\n{'='*60}")
         print(f"  {algo.upper()} | seed={seed} | config={os.path.basename(config_path)}")
         print(f"{'='*60}")
@@ -77,6 +81,8 @@ def run_config(config_path, seed_override=None):
 
     if len(results) > 1:
         _plot_aggregate(results, plot_dir, algo)
+        from src.utils.plots import _plot_training_stats
+        _plot_training_stats(algo, log_paths, plot_dir)
 
     return results
 
@@ -91,6 +97,8 @@ def main():
         help="Force une seed unique.")
     parser.add_argument("--list", "-l", action="store_true",
         help="Liste les configs disponibles et quitte.")
+    parser.add_argument("--plot-only", action="store_true",
+        help="Ne pas entraîner, juste régénérer les graphes depuis logs/train/")
     args = parser.parse_args()
 
     configs_dir = os.path.join(ROOT, "configs")
@@ -106,6 +114,36 @@ def main():
 
     if not config_files:
         print(f"Aucun YAML trouvé dans {configs_dir}/"); sys.exit(1)
+
+    if args.plot_only:
+        print("\n[PLOT ONLY] Régénération des graphiques d'entraînement...")
+        import pandas as pd
+        import re
+        from src.utils.plots import _plot_aggregate, _plot_training_stats
+        
+        for cfg_path in config_files:
+            cfg = load_config(cfg_path)
+            algo = cfg["algo"]
+            plot_dir = make_plot_dir(algo)
+            log_pattern = os.path.join(ROOT, "logs", "train", f"{algo}_seed*.csv")
+            log_paths = sorted(glob.glob(log_pattern))
+            
+            if not log_paths:
+                continue
+                
+            print(f"  → {algo} ({len(log_paths)} seeds)")
+            fake_results = []
+            for lp in log_paths:
+                df = pd.read_csv(lp)
+                m = re.search(r"seed(\d+)", lp)
+                s = int(m.group(1)) if m else 0
+                fake_results.append({"algo": algo, "seed": s, "returns": df["total_reward"].tolist()})
+            
+            if fake_results:
+                if len(fake_results) > 1:
+                    _plot_aggregate(fake_results, plot_dir, algo)
+                _plot_training_stats(algo, log_paths, plot_dir)
+        return
 
     all_results = []
     for cfg_path in config_files:

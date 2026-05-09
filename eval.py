@@ -40,40 +40,50 @@ def main():
         help="Nombre d'épisodes de test par modèle.")
     parser.add_argument("--out", default="plots/benchmark",
         help="Dossier de sortie pour les graphes (défaut: plots/benchmark)")
+    parser.add_argument("--plot-only", action="store_true",
+        help="Ne pas évaluer les modèles, juste régénérer les graphes depuis logs/eval/")
     args = parser.parse_args()
-
-    if args.models:
-        model_paths = args.models
-    else:
-        model_paths = sorted(glob.glob(os.path.join(ROOT, "models", "*.pth")))
-
-    if not model_paths:
-        print("Aucun modèle (.pth) trouvé. Lancez d'abord l'entraînement (python train.py).")
-        sys.exit(1)
-
-    print(f"\nModèles à évaluer ({len(model_paths)}) :")
-    for p in model_paths:
-        print(f"  {p}")
 
     eval_logs_paths = []
 
-    # Boucle d'évaluation
-    for path in model_paths:
-        algo = algo_from_path(path)
-        m = re.search(r"seed(\d+)", os.path.basename(path))
-        seed = int(m.group(1)) if m else 0
-        
-        config_path = os.path.join(ROOT, "configs", f"{algo}.yaml")
-        if not os.path.exists(config_path):
-            if algo == "dqn":
-                config_path = os.path.join(ROOT, "configs", "dqn_hard.yaml")
-            if not os.path.exists(config_path):
-                print(f"[ATTENTION] Config introuvable pour {path}, passage.")
-                continue
+    if args.plot_only:
+        print("\n[PLOT ONLY] Mode graphique seul activé.")
+        eval_logs_paths = sorted(glob.glob(os.path.join(ROOT, "logs", "eval", "*.csv")))
+        if not eval_logs_paths:
+            print("Aucun log d'évaluation trouvé dans logs/eval/. Lancez d'abord une évaluation.")
+            sys.exit(1)
+        print(f"Trouvé {len(eval_logs_paths)} fichiers de logs d'évaluation.")
+    else:
+        if args.models:
+            model_paths = args.models
+        else:
+            model_paths = sorted(glob.glob(os.path.join(ROOT, "models", "*.pth")))
+
+        if not model_paths:
+            print("Aucun modèle (.pth) trouvé. Lancez d'abord l'entraînement (python train.py).")
+            sys.exit(1)
+
+        print(f"\nModèles à évaluer ({len(model_paths)}) :")
+        for p in model_paths:
+            print(f"  {p}")
+
+        # Boucle d'évaluation
+        for path in model_paths:
+            algo = algo_from_path(path)
+            m = re.search(r"seed(\d+)", os.path.basename(path))
+            seed = int(m.group(1)) if m else 0
             
-        log_path = evaluate_model(path, config_path, algo, seed, n_episodes=args.n_episodes)
-        if log_path:
-            eval_logs_paths.append(log_path)
+            config_path = os.path.join(ROOT, "configs", f"{algo}.yaml")
+            if not os.path.exists(config_path):
+                if algo == "dqn":
+                    config_path = os.path.join(ROOT, "configs", "dqn_hard.yaml")
+                if not os.path.exists(config_path):
+                    print(f"[ATTENTION] Config introuvable pour {path}, passage.")
+                    continue
+                
+            log_path = evaluate_model(path, config_path, algo, seed, n_episodes=args.n_episodes)
+            if log_path:
+                eval_logs_paths.append(log_path)
 
     if not eval_logs_paths:
         print("Aucune évaluation n'a abouti.")

@@ -87,7 +87,7 @@ python3 -c "import yaml" 2>/dev/null || \
   { warn "pyyaml manquant, installation..."; pip install -q pyyaml; }
 
 # ── 3. création des dossiers ──────────────────────────────────────────────────
-mkdir -p logs eval_logs plots videos models configs
+mkdir -p logs/train logs/eval plots videos models configs
 success "Dossiers créés"
 
 # ── 4. entraînement ───────────────────────────────────────────────────────────
@@ -111,7 +111,7 @@ if [[ "$EVAL_ONLY" == false ]]; then
     done
   fi
 
-  success "Entraînement terminé — logs dans logs/"
+  success "Entraînement terminé — logs dans logs/train/"
 fi
 
 # ── 5. benchmark & graphes ───────────────────────────────────────────────────
@@ -130,11 +130,11 @@ echo ""
 echo -e "${BOLD}============================================================${NC}"
 echo -e "${GREEN}${BOLD}  Reproduction terminée avec succès.${NC}"
 echo -e "${BOLD}  Résultats :${NC}"
-echo -e "    logs/          — CSV d'apprentissage"
-echo -e "    eval_logs/     — CSV des tests d'évaluation déterministe"
+echo -e "    logs/train/    — CSV d'apprentissage"
+echo -e "    logs/eval/     — CSV des tests d'évaluation déterministe"
 echo -e "    models/        — Poids des modèles (.pth)"
 echo -e "    videos/train/  — Vidéos d'entraînement"
-echo -e "    videos/tests/  — Vidéos de tests"
+echo -e "    videos/evals/  — Vidéos de tests"
 echo -e "    plots/         — Courbes d'entraînement et benchmark comparatif"
 echo -e "${BOLD}============================================================${NC}"
 echo ""

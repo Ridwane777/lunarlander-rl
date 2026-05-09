@@ -23,7 +23,7 @@ class ReinforceAgent:
         self.gamma = config.get("gamma", 0.99)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-        self.policy = PolicyNetwork(obs_dim, n_actions).to(self.device)
+        self.policy = PolicyNetwork(obs_dim, n_actions, hidden=config.get("hidden", 128)).to(self.device)
         self.optimizer = optim.Adam(self.policy.parameters(), lr=config.get("lr", 0.001))
 
         # Stockage pour un épisode

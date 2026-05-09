@@ -13,16 +13,17 @@ def save_model(agent, algo, seed, filepath=None):
     if algo.startswith("dqn"):
         torch.save(agent.q_net.state_dict(), filepath)
         print(f"  → Modèle DQN sauvegardé dans {filepath}")
-    elif algo == "reinforce":
+    elif algo.startswith("reinforce"):
         torch.save(agent.policy.state_dict(), filepath)
         print(f"  → Modèle REINFORCE sauvegardé dans {filepath}")
-    elif algo == "q_learning":
+    elif algo.startswith("q_learning"):
         # Convert defaultdict to standard dict for pickling
         torch.save(dict(agent.q_table), filepath)
         print(f"  → Table Q-Learning sauvegardée dans {filepath}")
     else:
-        # random or heuristic
-        pass
+        # random or heuristic: save a dummy file to allow eval.py to find it
+        torch.save({"type": algo, "status": "baseline"}, filepath)
+        print(f"  → Baseline {algo.upper()} 'sauvegardée' dans {filepath}")
 
 def load_model(agent, algo, filepath):
     if not os.path.exists(filepath):
@@ -38,11 +39,11 @@ def load_model(agent, algo, filepath):
         agent.epsilon = 0.0 # Greedy mode
         print(f"  → Modèle DQN chargé depuis {filepath}")
         
-    elif algo == "reinforce":
+    elif algo.startswith("reinforce"):
         agent.policy.load_state_dict(torch.load(filepath, map_location=device, weights_only=True))
         print(f"  → Modèle REINFORCE chargé depuis {filepath}")
         
-    elif algo == "q_learning":
+    elif algo.startswith("q_learning"):
         # Pour le Q-Learning, on charge des dictionnaires bruts (potentiellement avec des types NumPy)
         # On utilise weights_only=False si le add_safe_globals ne suffisait pas pour des clés complexes
         loaded_dict = torch.load(filepath, map_location="cpu", weights_only=False)
@@ -50,5 +51,9 @@ def load_model(agent, algo, filepath):
             agent.q_table[k] = v
         agent.epsilon = 0.0 # Greedy mode
         print(f"  → Table Q-Learning chargée depuis {filepath}")
+    
+    else:
+        # random or heuristic
+        print(f"  → Baseline {algo.upper()} prête (aucune pondération à charger)")
     
     return True

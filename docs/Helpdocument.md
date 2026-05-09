@@ -61,7 +61,24 @@ Si le score est bon, on dit au réseau "augmente la probabilité de toutes les a
 
 ---
 
-## 3. L'Étude d'Ablation (Hard vs Soft Update)
+## 3. Zoom sur le Réseau de Neurones (`PolicyNetwork`)
+
+Si le jury vous demande comment l'agent "réfléchit" concrètement à partir des capteurs, voici le détail du réseau utilisé (type MLP - Multi-Layer Perceptron) :
+
+### Architecture pas à pas :
+1.  **Entrée (8 neurones)** : Reçoit les 8 données de `LunarLander-v3` (Coordonnées X/Y, Vitesses VX/VY, Angle, Vitesse Angulaire, Contacts jambes).
+2.  **Couches Cachées (ex: 128 neurones)** :
+    *   **`nn.Linear`** : C'est une opération de multiplication matricielle ($Y = WX + B$). Chaque neurone de la couche précédente est connecté à chaque neurone de la suivante par un "poids" ($W$) qui définit l'importance de l'information.
+    *   **`nn.ReLU` (Activation)** : C'est l'ingrédient magique. Elle bloque les signaux négatifs ($f(x) = \max(0, x)$). Cela permet au réseau d'apprendre des fonctions mathématiques **non-linéaires**. Sans ReLU, votre IA ne pourrait apprendre que des trajectoires en ligne droite !
+3.  **Sortie (4 neurones)** : Un pour chaque action possible (Rien, Gauche, Principal, Droit).
+
+### La différence entre DQN et REINFORCE en sortie :
+-   **DQN** : Les 4 neurones sortent des "Q-Values" (des notes de -200 à +200). L'agent prend l'action qui a la meilleure note (le `argmax`).
+-   **REINFORCE** : On ajoute une couche **Softmax** à la fin. Elle transforme les sorties en **pourcentages** (probabilités). L'agent tire au sort son action selon ces pourcentages. C'est ce qu'on appelle une **politique stochastique**.
+
+---
+
+## 4. L'Étude d'Ablation (Hard vs Soft Update)
 
 **Qu'est-ce qu'une ablation ?** En IA, c'est l'action de modifier ou de retirer un mécanisme précis de l'algorithme pour prouver son utilité.
 Ici, nous avons étudié comment mettre à jour le **Target Network** (la cible figée du DQN).
@@ -73,7 +90,7 @@ Ici, nous avons étudié comment mettre à jour le **Target Network** (la cible 
 
 ---
 
-## 4. Dictionnaire des Hyperparamètres
+## 5. Dictionnaire des Hyperparamètres
 Si le jury vous demande ce que font ces lignes de vos fichiers YAML :
 - **`gamma` (0.99)** : C'est la myopie de l'agent. À 0.99, il se soucie énormément de l'avenir (il sait que l'atterrissage +100 arrivera dans longtemps). À 0, il ne pense qu'à la seconde qui suit.
 - **`lr` (Learning Rate - 0.0003)** : La vitesse d'apprentissage. S'il est trop grand, le réseau modifie ses connexions trop violemment et oublie tout. Trop petit, l'entraînement prendrait des mois.
@@ -83,7 +100,39 @@ Si le jury vous demande ce que font ces lignes de vos fichiers YAML :
 
 ---
 
-## 5. Comment lire les Métriques du Benchmark ?
+## 6. Concepts Avancés : On-policy vs Off-policy
+
+C'est une distinction majeure dans l'apprentissage par renforcement qui définit comment l'agent utilise son expérience pour apprendre.
+
+### On-policy (Apprentissage "en direct")
+L'agent apprend à améliorer sa stratégie en utilisant uniquement les données collectées par sa politique **actuelle**. Une fois que les données ont servi à une mise à jour, elles sont jetées car elles ne correspondent plus à la nouvelle politique.
+- **Agent concerné** : **REINFORCE**.
+- **Avantage** : Plus stable mathématiquement, car les données sont toujours "fraîches".
+- **Inconvénient** : Très inefficace en termes de données (on jette tout après chaque mise à jour).
+
+### Off-policy (Apprentissage "par l'expérience")
+L'agent peut apprendre à partir de n'importe quelle donnée, qu'elle vienne de sa version actuelle, d'une version très ancienne de lui-même, ou même d'un autre agent. Ces algorithmes utilisent généralement un **Replay Buffer** pour stocker et réutiliser les expériences.
+- **Agents concernés** : **Q-Learning** et **DQN**.
+- **Avantage** : Très efficace car chaque expérience peut être réutilisée plusieurs fois pour l'entraînement.
+- **Inconvénient** : Plus complexe à stabiliser (nécessite un Target Network pour éviter les divergences).
+
+---
+
+## 7. Synthèse de nos agents
+
+| Algorithme | Type | Mémoire | Mode |
+|------------|------|---------|------|
+| **Random** | Baseline | Non | N/A |
+| **Heuristic** | Baseline | Non | N/A |
+| **Q-Learning** | Tabulaire | Non* | **Off-policy** |
+| **REINFORCE** | Policy Gradient | Non | **On-policy** |
+| **DQN** | Value-based | **Oui** (Replay Buffer) | **Off-policy** |
+
+*\*Le Q-Learning tabulaire est théoriquement Off-policy car il apprend la Q-valeur optimale indépendamment de l'action choisie, mais dans notre implémentation simple, il n'utilise pas de Replay Buffer.*
+
+---
+
+## 8. Comment lire les Métriques du Benchmark ?
 
 - **`MEAN_R` (Score Moyen)** : La moyenne de vos 100 épisodes d'évaluation. Pour valider le projet Ridwane777, il fallait que cette valeur dépasse 200.
 - **`±CI95` (Intervalle de Confiance à 95%)** : C'est la marge d'erreur. Si vous avez 210 ± 5, ça veut dire que statistiquement, vous êtes sûrs à 95% que votre algorithme donne un agent dont le vrai niveau se situe entre 205 et 215. Plus le CI95 est bas, plus votre algorithme est fiable et vos 5 seeds ont donné la même chose.
@@ -91,4 +140,3 @@ Si le jury vous demande ce que font ces lignes de vos fichiers YAML :
 
 ---
 
-**Bon courage pour la défense ! Vous maîtrisez parfaitement l'architecture et les pièges dans lesquels nous sommes tombés en chemin (comme l'encodage vidéo CPU ou le crash de la normalisation en REINFORCE) feront de formidables anecdotes pour prouver votre expertise au jury.**

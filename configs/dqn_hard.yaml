@@ -1,5 +1,5 @@
 env: LunarLander-v3
-algo: dqn
+algo: dqn_hard
 seeds: [0, 1, 2, 3, 4]
 max_steps: 500000
 success_threshold: 200

@@ -234,9 +234,9 @@ def main():
     args = parser.parse_args()
 
     default_methods = [
-        "Q-Learning=logs/q_learning.csv",
-        "REINFORCE=logs/reinforce.csv",
-        "DQN (soft)=logs/dqn_soft.csv",
+        "Q-Learning=logs/train/q_learning_seed0.csv",
+        "REINFORCE=logs/train/reinforce_seed0.csv",
+        "DQN (hard)=logs/train/dqn_hard_seed0.csv",
     ]
     methods = args.method if args.method else default_methods
 

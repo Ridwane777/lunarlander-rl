@@ -15,8 +15,8 @@ def load_config(path):
         return yaml.safe_load(f)
 
 def make_log_path(algo, seed):
-    os.makedirs("logs", exist_ok=True)
-    return f"logs/{algo}_seed{seed}.csv"
+    os.makedirs("logs/train", exist_ok=True)
+    return f"logs/train/{algo}_seed{seed}.csv"
 
 def make_plot_dir(algo):
     d = f"plots/{algo}"

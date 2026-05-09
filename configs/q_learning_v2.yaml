@@ -1,0 +1,13 @@
+env: LunarLander-v3
+algo: q_learning_v2
+seeds: [0, 1, 2, 3, 4]
+max_steps: 200000
+success_threshold: 200
+success_window: 100
+
+hyperparameters:
+  gamma: 0.99
+  lr: 0.05
+  epsilon_start: 1.0
+  epsilon_end: 0.01
+  epsilon_decay: 0.999

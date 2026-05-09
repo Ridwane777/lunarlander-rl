@@ -16,9 +16,9 @@ from src.agents.heuristic_agent import HeuristicAgent
 def create_agent(algo, env, hp):
     if algo.startswith("dqn"):
         return DQNAgent(env.observation_space.shape[0], env.action_space.n, hp)
-    elif algo == "reinforce":
+    elif algo.startswith("reinforce"):
         return ReinforceAgent(env.observation_space.shape[0], env.action_space.n, hp)
-    elif algo == "q_learning":
+    elif algo.startswith("q_learning"):
         return QLearningAgent(env.action_space.n, hp)
     elif algo == "random":
         return RandomAgent(env)
@@ -31,9 +31,9 @@ def evaluate_model(model_path, config_path, algo, seed, n_episodes=100):
     cfg = load_config(config_path)
     hp = cfg.get("hyperparameters", {})
     
-    os.makedirs(f"videos/tests/{algo}_seed{seed}", exist_ok=True)
+    os.makedirs(f"videos/evals/{algo}_seed{seed}", exist_ok=True)
     env = gym.make(cfg["env"], render_mode="rgb_array")
-    env = gym.wrappers.RecordVideo(env, f"videos/tests/{algo}_seed{seed}")
+    env = gym.wrappers.RecordVideo(env, f"videos/evals/{algo}_seed{seed}")
         
     set_seed(seed + 1000)
 
@@ -43,8 +43,8 @@ def evaluate_model(model_path, config_path, algo, seed, n_episodes=100):
     if not load_model(agent, algo, model_path):
         return None
 
-    os.makedirs("eval_logs", exist_ok=True)
-    log_path = f"eval_logs/{algo}_seed{seed}.csv"
+    os.makedirs("logs/eval", exist_ok=True)
+    log_path = f"logs/eval/{algo}_seed{seed}.csv"
     logger = EpisodeLogger(log_path)
     
     print(f"\n[EVAL] Test de {algo} (seed {seed}) sur {n_episodes} épisodes...")
@@ -70,7 +70,7 @@ def evaluate_model(model_path, config_path, algo, seed, n_episodes=100):
     logger.close()
     env.close()
     
-    concat_episode_videos(f"videos/tests/{algo}_seed{seed}")
+    concat_episode_videos(f"videos/evals/{algo}_seed{seed}")
     
     print(f"[EVAL] Terminé en {time.time()-t0:.1f}s. Logs sauvegardés dans {log_path}")
     return log_path
