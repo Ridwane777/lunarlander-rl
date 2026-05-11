@@ -29,12 +29,12 @@ class DQNAgent:
         self.soft_update = config.get("soft_update", False)
         self.tau = config.get("tau", 0.005)
 
-        # Epsilon-greedy
+        # Epsilon-greedy 
         self.epsilon = config["epsilon_start"]
         self.epsilon_end = config["epsilon_end"]
         self.epsilon_decay = config["epsilon_decay"]
 
-        # Les deux réseaux
+        # Les deux réseaux 
         self.q_net = QNetwork(obs_dim, n_actions).to(self.device)
         self.target_net = QNetwork(obs_dim, n_actions).to(self.device)
         self.target_net.load_state_dict(self.q_net.state_dict())
@@ -64,13 +64,13 @@ class DQNAgent:
         if len(self.buffer) < self.batch_size:
             return None
 
-        # Les tenseurs arrivent déjà sur le bon device
+        # Les tenseurs arrivent déjà sur le bon device 
         states_t, actions_t, rewards_t, next_states_t, dones_t = self.buffer.sample(self.batch_size)
 
-        # Q-valeurs prédites par le réseau principal
+        # Q-valeurs prédites par le réseau principal 
         q_values = self.q_net(states_t).gather(1, actions_t.unsqueeze(1)).squeeze(1)
 
-        # Double DQN : q_net choisit l'action, target_net évalue
+        # Double DQN : q_net choisit l'action, target_net évalue 
         with torch.no_grad():
             best_actions = self.q_net(next_states_t).argmax(1)
             next_q = self.target_net(next_states_t).gather(1, best_actions.unsqueeze(1)).squeeze(1)
@@ -83,8 +83,7 @@ class DQNAgent:
         nn.utils.clip_grad_norm_(self.q_net.parameters(), self.grad_clip)
         self.optimizer.step()
 
-
-        # Mise à jour du target network
+        # Mise à jour du target network  
         self.step_count += 1
         if self.soft_update:
             for p, tp in zip(self.q_net.parameters(), self.target_net.parameters()):
