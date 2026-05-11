@@ -45,7 +45,10 @@ pip install -r requirements.txt
 .
 ├── train.py                    # Point d'entrée — entraînement
 ├── eval.py                     # Point d'entrée — évaluation & benchmark
-├── reproduce.sh                # Script one-click de reproduction
+│
+├── scripts/                    # Scripts utilitaires bash
+│   ├── reproduce.sh            # Script one-click de reproduction
+│   └── run_eval.sh             # Script de lancement de l'évaluation
 │
 ├── configs/                    # Hyperparamètres par algorithme (YAML)
 ├── docs/                       # Documentation & Rapports
@@ -98,12 +101,15 @@ python eval.py
 
 # Régénérer uniquement les graphiques sans refaire les tests
 python eval.py --plot-only
+
+# Alternative via script bash
+bash scripts/run_eval.sh
 ```
 
 ### 3. Reproduction Complète
 Pour régénérer l'intégralité des résultats du projet en une commande :
 ```bash
-bash reproduce.sh
+bash scripts/reproduce.sh
 ```
 
 ---
