@@ -4,7 +4,7 @@ Ce document détaille les choix techniques et le réglage des hyperparamètres q
 
 ## 1. Architecture des Réseaux de Neurones
 
-### Pourquoi 128 neurones ? (Justification Technique)
+### Pourquoi 128 neurones ?
 Le choix d'une architecture avec des couches cachées de **128 neurones** pour le DQN découle de nos observations sur les agents précédents :
 - **Retour d'expérience REINFORCE** : Lors de nos tests sur REINFORCE, nous avons constaté qu'un réseau de 64 neurones était trop limité pour capturer la précision nécessaire à l'atterrissage, entraînant une forte variance. L'augmentation de la capacité a été la clé du succès.
 - **Le "Sweet Spot" du DQN** : Pour le DQN, 128 neurones constituent le point d'équilibre idéal. Cela offre une capacité de représentation supérieure à ce que nous avions initialement sur REINFORCE, permettant de modéliser finement la fonction de valeur Q pour les **4 actions discrètes**, sans introduire la complexité inutile d'un réseau trop large.
