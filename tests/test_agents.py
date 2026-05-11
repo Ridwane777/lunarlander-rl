@@ -66,10 +66,10 @@ def test_dqn_agent(dummy_config):
     agent = DQNAgent(obs_dim=8, n_actions=4, config=dummy_config)
     obs = np.random.rand(8)
     
-    # Test action selection
+    # Test action selection  
     action = agent.select_action(obs)
     assert action in [0, 1, 2, 3]
     
-    # Test memory push (store)
+    # Test memory push (store)  
     agent.store(obs, action, 1.0, obs, False)
     assert len(agent.buffer) == 1

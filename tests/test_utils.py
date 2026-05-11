@@ -12,26 +12,26 @@ def test_replay_buffer():
     device = torch.device("cpu")
     buffer = ReplayBuffer(capacity=capacity, device=device)
     
-    # Remplir au delà de la capacité
+    # Remplir au delà de la capacité  
     for i in range(capacity + 5):
         buffer.push(np.random.rand(8), 1, 1.0, np.random.rand(8), False)
     
     assert len(buffer) == capacity
     
-    # Tester le sample
+    # Tester le sample  
     states, actions, rewards, next_states, dones = buffer.sample(batch_size=5)
     assert states.shape == (5, 8)
     assert actions.shape == (5,)
     assert rewards.shape == (5,)
 
 def test_model_utils_dqn():
-    # Mock DQNAgent with q_net
+    # Mock DQNAgent with q_net  
     mock_agent = MagicMock()
     mock_agent.q_net = nn.Sequential(nn.Linear(8, 4))
     
     path = "tests/test_dqn_save.pth"
     
-    # Sauvegarde
+    # Sauvegarde  
     save_model(mock_agent, "dqn_test", 99, filepath=path)
     assert os.path.exists(path)
     
