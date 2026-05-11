@@ -1,10 +1,6 @@
 # Optimisations du Deep Q-Network (DQN) sur LunarLander-v3
 
-Ce document résume l'analyse comparative entre l'implémentation du DQN du projet et l'implémentation d'un agent public hautement performant ([reinforcement_learning_lunar_lander_v3](https://github.com/IgorComune/reinforcement_learning_lunar_lander_v3)).
-
-Bien que l'architecture du réseau de neurones (3 couches denses avec 128 neurones cachés) soit quasi-identique, plusieurs différences cruciales dans le "control flow" (gestion de l'apprentissage) expliquent la différence de performance.
-
-## 1. Fréquence de mise à jour (`update_every`) 🏆
+## 1. Fréquence de mise à jour (`update_every`)
 **L'approche initiale** : Le réseau subit une passe de rétropropagation (backpropagation) à **chaque itération** de l'environnement (à chaque appel de `env.step()`).
 **L'approche optimisée** : Le réseau n'est mis à jour que **tous les 4 steps**.
 
