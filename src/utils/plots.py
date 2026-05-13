@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 
 def _rolling(data, w=100):
+    """Calcule la moyenne mobile sur une fenêtre de taille w."""
     out = []
     for i in range(len(data)):
         s = max(0, i - w + 1)
@@ -15,6 +16,7 @@ def _rolling(data, w=100):
 
 
 def _plot_seed(result, plot_dir):
+    """Génère le graphique de récompense pour une seed individuelle."""
     r = result["returns"]
     if len(r) < 2:
         return
@@ -23,13 +25,13 @@ def _plot_seed(result, plot_dir):
 
     fig, ax = plt.subplots(figsize=(10, 4))
     ax.plot(eps, r, alpha=0.25, color="steelblue", linewidth=0.8)
-    ax.plot(eps, roll, color="steelblue", linewidth=2, label="Rolling mean 100")
-    ax.axhline(200, color="green", linestyle="--", linewidth=1.5, label="Seuil 200")
+    ax.plot(eps, roll, color="steelblue", linewidth=2, label="Moyenne mobile (100)")
+    ax.axhline(200, color="green", linestyle="--", linewidth=1.5, label="Objectif 200")
     if result["solved_at"] is not None:
         ax.axvline(result["solved_at"], color="orange", linestyle=":",
                    linewidth=1.5, label=f"Résolu ep.{result['solved_at']}")
     ax.set_title(f"{result['algo']} | seed={result['seed']}")
-    ax.set_xlabel("Épisode"); ax.set_ylabel("Total reward")
+    ax.set_xlabel("Épisode"); ax.set_ylabel("Récompense totale")
     ax.legend(fontsize=8); ax.grid(True, alpha=0.3)
     plt.tight_layout()
     path = os.path.join(plot_dir, f"seed{result['seed']}_reward.png")
@@ -38,6 +40,7 @@ def _plot_seed(result, plot_dir):
 
 
 def _plot_aggregate(results, plot_dir, algo):
+    """Génère le graphique agrégé sur toutes les seeds avec intervalle de confiance à 95%."""
     all_r = [r["returns"] for r in results]
     n     = len(all_r)
     min_l = min(len(r) for r in all_r)
@@ -51,20 +54,23 @@ def _plot_aggregate(results, plot_dir, algo):
         mu  = sum(col)/n
         var = sum((x-mu)**2 for x in col) / max(n-1, 1)
         stds.append(math.sqrt(var))
+    
+    # Calcul de l'IC 95% : 1.96 * (std / sqrt(n))
     ci95 = [1.96*s/math.sqrt(n) for s in stds]
     roll = _rolling(means)
     eps  = list(range(min_l))
 
     fig, ax = plt.subplots(figsize=(12, 5))
+    # Zone d'ombre représentant l'IC 95%
     ax.fill_between(eps, [m-c for m,c in zip(means,ci95)],
                          [m+c for m,c in zip(means,ci95)],
-                    alpha=0.2, color="steelblue", label="IC 95%")
+                    alpha=0.2, color="steelblue", label="IC 95% (Robustesse)")
     ax.plot(eps, means, alpha=0.3, color="steelblue", linewidth=1)
     ax.plot(eps, roll, color="steelblue", linewidth=2.5,
-            label=f"Rolling mean 100 ({n} seeds)")
-    ax.axhline(200, color="green", linestyle="--", linewidth=1.5, label="Seuil 200")
-    ax.set_title(f"{algo} — Agrégé {n} seeds (IC 95%)")
-    ax.set_xlabel("Épisode"); ax.set_ylabel("Total reward")
+            label=f"Moyenne agrégée ({n} seeds)")
+    ax.axhline(200, color="green", linestyle="--", linewidth=1.5, label="Objectif 200")
+    ax.set_title(f"{algo} — Benchmark Agrégé {n} seeds")
+    ax.set_xlabel("Épisode"); ax.set_ylabel("Récompense totale")
     ax.legend(fontsize=9); ax.grid(True, alpha=0.3)
     plt.tight_layout()
     path = os.path.join(plot_dir, "aggregate.png")

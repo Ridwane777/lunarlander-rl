@@ -1,40 +1,67 @@
-# Optimisation de l'Apprentissage — LunarLander-v3
+# Analyse de l'Optimisation et Plan d'Amélioration
+**Projet  — LunarLander RL**
 
-Ce document détaille les choix techniques et le réglage des hyperparamètres qui ont permis d'atteindre les performances documentées dans le benchmark.
+Ce document détaille l'analyse technique des performances de nos agents et définit une feuille de route stratégique pour dépasser les limites actuelles du benchmark.
 
-## 1. Architecture des Réseaux de Neurones
+---
 
-### Pourquoi 128 neurones ?
-Le choix d'une architecture avec des couches cachées de **128 neurones** pour le DQN découle de nos observations sur les agents précédents :
-- **Retour d'expérience REINFORCE** : Lors de nos tests sur REINFORCE, nous avons constaté qu'un réseau de 64 neurones était trop limité pour capturer la précision nécessaire à l'atterrissage, entraînant une forte variance. L'augmentation de la capacité a été la clé du succès.
-- **Le "Sweet Spot" du DQN** : Pour le DQN, 128 neurones constituent le point d'équilibre idéal. Cela offre une capacité de représentation supérieure à ce que nous avions initialement sur REINFORCE, permettant de modéliser finement la fonction de valeur Q pour les **4 actions discrètes**, sans introduire la complexité inutile d'un réseau trop large.
-- **Environnement Déterministe** : Comme nous évoluons dans une version **sans vent** du LunarLander, la physique est stable. 128 neurones suffisent à apprendre les équations de mouvement du lander (cinématique) sans risquer de mémoriser des bruits aléatoires inexistants.
+## 1. Justification de l'Architecture (MLP 128x128)
 
-### Améliorations Architecturales
-- **Double DQN (mis en œuvre)** : Pour pallier le biais d'optimisme du DQN classique (surestimation des valeurs d'action), nous utilisons le réseau principal pour choisir l'action et le réseau cible pour l'évaluer.
+Le choix d'un réseau Multi-Layer Perceptron (MLP) avec deux couches cachées de 128 neurones chacune repose sur une analyse du compromis biais-variance :
 
-## 2. Stratégies de Stabilisation
+- **Capacité de Représentation** : L'espace d'état continu (8D) nécessite une capacité de généralisation que les architectures plus fines (64 neurones) peinent à atteindre, comme observé lors de nos tests préliminaires sur REINFORCE (variance excessive).
+- **Stabilité Numérique** : 128 neurones constituent le "sweet spot" pour le DQN. Au-delà (ex: 256+), le risque d'overfitting sur les trajectoires initiales de crash augmente, et le temps de calcul par step impacte négativement la fréquence d'échantillonnage du Replay Buffer.
+- **Activation ReLU** : L'utilisation de `ReLU` permet d'apprendre les non-linéarités de la cinématique (gravité vs poussée) tout en évitant le problème de disparition du gradient.
 
-### Target Network Update (Ablation)
-Nous avons comparé deux approches pour la mise à jour du réseau cible dans le DQN :
-- **Hard Update** (Vainqueur) : Copie totale tous les $C$ pas (ex: 500). Provoque des "sauts" de politique qui aident l'agent à explorer de nouvelles stratégies de descente.
-- **Soft Update (Polyak)** : Mise à jour lente et continue ($\tau=0.02$). Bien que théoriquement plus stable, elle a montré une convergence plus lente, l'agent restant souvent bloqué dans un comportement de vol stationnaire trop prudent.
+---
 
-### Normalisation (REINFORCE)
-Sans normalisation, les gradients dans REINFORCE sont extrêmement instables car ils dépendent de l'amplitude brute des récompenses. Nous avons optimisé l'apprentissage en normalisant les retours (Retours - Moyenne / Écart-type) à chaque fin d'épisode.
+## 2. Analyse des Stratégies de Stabilisation
 
-## 3. Réglage des Hyperparamètres Critiques
+### 2.1 Le Biais d'Optimisme (Double DQN)
+Le DQN classique a tendance à surestimer les Q-valeurs. L'implémentation du **Double DQN** a été l'optimisation la plus impactante, permettant d'atteindre le score de 218.5 en découplant :
+1.  Le choix de l'action : $a^* = \arg\max_a Q(s', a; \theta_{policy})$
+2.  L'évaluation de l'action : $Target = R + \gamma Q(s', a^*; \theta_{target})$
 
-| Paramètre | Choix | Justification |
-|-----------|-------|---------------|
-| **Learning Rate** | $10^{-3}$ | Équilibre entre vitesse d'apprentissage et stabilité (évite les oscillations divergentes). |
-| **Epsilon Decay** | $0.995$ | Garantit une phase d'exploration suffisante (environ 200 épisodes) avant de devenir purement déterministe. |
-| **Batch Size** | $64$ | Taille optimale pour stabiliser le gradient stochastique sans saturer la mémoire. |
-| **Gamma** | $0.99$ | Facteur de remise privilégiant la récompense finale (atterrissage) sur les récompenses immédiates. |
+### 2.2 Duel des Target Updates (Hard vs Soft)
+Nos données révèlent un paradoxe intéressant :
+- **Soft Update ($\tau=0.02$)** : Produit un apprentissage stable et lisse, mais l'agent devient souvent "trop prudent" (vol stationnaire infini).
+- **Hard Update (C=500)** : Bien que plus instable, elle force l'agent à réévaluer brutalement ses priorités tous les 500 pas, ce qui semble bénéfique pour sortir des minima locaux de type "Hovering".
 
-## 4. Pistes d'Optimisation Futures
+---
 
-Pour dépasser le taux de succès actuel (75%), plusieurs pistes sont envisageables :
-1. **Prioritized Experience Replay (PER)** : Pour que le DQN apprenne plus des erreurs importantes (crashs) que des situations banales.
-2. **Dueling DQN** : Séparer l'estimation de la valeur de l'état et de l'avantage de l'action.
-3. **PPO (Proximal Policy Optimization)** : Pour stabiliser davantage la politique en limitant les changements de paramètres trop brusques.
+## 3. Synthèse des Hyperparamètres Critiques
+
+| Hyperparamètre | Valeur | Impact sur les Données |
+|----------------|--------|-------------------------|
+| **Learning Rate** | $10^{-3}$ | Garantit la convergence en moins de 600 épisodes. |
+| **Epsilon Decay** | $0.995$ | Crucial pour laisser 200 épisodes d'exploration pure. |
+| **Buffer Size** | $10^5$ | Permet de conserver des atterrissages réussis sur une longue durée. |
+| **Grad Clip** | $10.0$ | Empêche la divergence lors des crashs violents. |
+
+---
+
+## 4. Plan d'Amélioration Basé sur les Données
+
+L'analyse de notre benchmark identifie trois goulots d'étranglement majeurs que ce plan vise à lever.
+
+### 4.1 Efficacité de l'Échantillonnage (PER)
+**Problème constaté** : Le DQN échantillonne uniformément, "gaspillant" du temps sur des trajectoires de crash déjà comprises.
+- **Solution** : **Prioritized Experience Replay (PER)**.
+- **Objectif** : Prioriser les transitions avec une forte erreur TD ($\delta$).
+- **Impact attendu** : Réduction du temps d'entraînement de 30% et augmentation de la robustesse sur les seeds difficiles.
+
+### 4.2 Réduction de la Variance (Actor-Critic)
+**Problème constaté** : REINFORCE affiche un CI95 de ±11.9, signe d'une instabilité chronique.
+- **Solution** : Migration vers **PPO (Proximal Policy Optimization)**.
+- **Mécanisme** : Ajout d'une Baseline apprise (Critique) et clipping du ratio de probabilité.
+- **Impact attendu** : Convergence stable vers des scores > 250 sans les oscillations actuelles.
+
+### 5.3 Extension au Contrôle Continu
+**Problème constaté** : Les actions discrètes (ON/OFF) limitent la finesse de l'atterrissage.
+- **Solution** : Utilisation de **SAC (Soft Actor-Critic)** sur LunarLanderContinuous-v3.
+- **Justification** : Un contrôle continu de la puissance permettrait d'éliminer les -0.3 pts de pénalité moteur par step en lissant la poussée.
+
+---
+
+## 5. Conclusion de l'Analyse
+L'optimisation actuelle a permis de transformer un échec (Q-Learning) en succès (DQN > 200). Cependant, pour atteindre un pilotage "humain" parfait (>280 pts), l'évolution vers des méthodes Actor-Critic et un échantillonnage prioritaire est la suite logique de ce projet.

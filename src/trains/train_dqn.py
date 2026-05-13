@@ -6,11 +6,19 @@ from src.utils.logger import EpisodeLogger
 from src.utils.core import set_seed, _result
 
 def train_dqn(cfg, seed, log_path):
+    """Boucle d'entraînement pour l'algorithme DQN (Value-Based).
+    
+    Cette fonction gère l'interaction avec l'environnement, le stockage dans le 
+    Replay Buffer, la mise à jour du réseau de neurones et le logging des performances.
+    """
     algo = cfg["algo"]
     hp   = cfg["hyperparameters"]
     os.makedirs(f"videos/train/{algo}_seed{seed}", exist_ok=True)
+    
+    # Initialisation de l'environnement avec enregistrement vidéo
     env  = gym.make(cfg["env"], render_mode="rgb_array")
     env  = gym.wrappers.RecordVideo(env, f"videos/train/{algo}_seed{seed}")
+    
     set_seed(seed)
     obs, _ = env.reset(seed=seed)
 
@@ -22,25 +30,31 @@ def train_dqn(cfg, seed, log_path):
     t0 = time.time()
 
     for _ in range(cfg["max_steps"]):
+        # 1. Sélection et exécution de l'action
         action = agent.select_action(obs)
         next_obs, reward, terminated, truncated, info = env.step(action)
         done = terminated or truncated
 
+        # 2. Apprentissage (Store + Update)
         agent.store(obs, action, reward, next_obs, float(done))
         loss = agent.update()
         if loss is not None:
             ep_losses.append(loss)
+            
         obs = next_obs; ep_return += reward; ep_len += 1
 
         if done:
+            # 3. Fin d'épisode : Logging et vérification de la réussite
             ep_returns.append(ep_return)
             mean_loss = sum(ep_losses) / len(ep_losses) if ep_losses else None
             logger.log(episode, ep_return, ep_len, terminated, truncated, info,
                        epsilon=agent.epsilon, loss=mean_loss)
+            
             tag = f"loss={mean_loss:.4f}" if mean_loss is not None else "filling buffer..."
             print(f"[{algo}|s{seed}] ep={episode:4d} R={ep_return:8.1f} "
                   f"ε={agent.epsilon:.3f} len={ep_len:4d} {tag}")
 
+            # Vérification du critère de succès (Score moyen > 200 sur N épisodes)
             if episode >= cfg["success_window"] - 1:
                 mw = sum(ep_returns[-cfg["success_window"]:]) / cfg["success_window"]
                 if mw >= cfg["success_threshold"] and solved_at is None:
@@ -48,8 +62,9 @@ def train_dqn(cfg, seed, log_path):
                     print(f"\n [{algo}|s{seed}] RÉSOLU ep={episode} (mean100={mw:.1f})\n")
                     break
 
+            # Réinitialisation pour l'épisode suivant
             ep_return = 0.0; ep_len = 0; ep_losses = []; episode += 1
-            agent.decay_epsilon()
+            agent.decay_epsilon() # Réduction de l'exploration
             obs, _ = env.reset()
 
     logger.close(); env.close()
