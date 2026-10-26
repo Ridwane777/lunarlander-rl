@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# reproduce.sh — LunarLander RLLunarLander-v3
+# reproduce.sh — LunarLander-v3
 # =============================================================================
 # Régénère TOUS les résultats du projet en une seule commande :
 #   1. Vérifie l'environnement Python
@@ -51,7 +51,7 @@ cd "$SCRIPT_DIR"
 
 echo ""
 echo -e "${BOLD}============================================================${NC}"
-echo -e "${BOLD}  LunarLander RLReproduce Script${NC}"
+echo -e "${BOLD}  LunarLander RL — Reproduce Script${NC}"
 echo -e "${BOLD}============================================================${NC}"
 echo ""
 

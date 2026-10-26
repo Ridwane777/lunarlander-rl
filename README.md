@@ -70,7 +70,7 @@ pip install -r requirements.txt
 │   ├── train/                  # Logs d'apprentissage
 │   └── eval/                   # Logs d'évaluation (100 épisodes)
 │
-├── models/                     # Poids des modèles .pth
+├── models/                     # Poids .pth (générés par train.py, non versionnés)
 ├── plots/                      # Courbes et graphiques comparatifs
 └── videos/
     ├── train/                  # Vidéos d'apprentissage
@@ -140,3 +140,15 @@ Les tests vérifient l'initialisation des agents, la sélection d'actions, la va
 > **Conclusion** : La supériorité du **Double DQN** avec **Hard Target Update** est démontrée. Il surclasse les méthodes tabulaires et les politiques de gradient simples grâce à sa mémoire (Replay Buffer) et sa capacité de généralisation sur les états continus.
 
 ---
+
+## 💾 Modèles entraînés
+
+Les poids `.pth` ne sont pas versionnés (~100 Mo pour 5 seeds × 8 configurations). Pour les régénérer :
+```bash
+python train.py            # entraîne tous les agents, écrit models/<algo>_seed<N>.pth
+python eval.py             # benchmark sur 100 épisodes déterministes
+```
+
+## 👤 Auteur
+
+**Ridwane777** — conception de l'architecture, agents (Q-Learning, REINFORCE, DQN), pipeline d'entraînement/évaluation, CI et benchmark.

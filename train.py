@@ -1,5 +1,5 @@
 """
-train.py — LunarLander RLLunarLander-v3
+train.py — LunarLander-v3
 =================================================
 Entraîne tous les agents définis dans configs/ sur plusieurs seeds.
 

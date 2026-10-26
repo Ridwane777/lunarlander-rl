@@ -1,5 +1,5 @@
 # Rapport de Projet — LunarLander-v3 
-**Équipe LunarLander RL**
+**Auteur : Ridwane777**
 
 ## 1. Introduction et Définition du Problème
 

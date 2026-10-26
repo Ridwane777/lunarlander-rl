@@ -3,13 +3,13 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "LunarLander RL-lunarlander"
+name = "lunarlander-rl"
 version = "1.0.0"
-description = "A Reinforcement Learning project for LunarLander-v3 "
+description = "Reinforcement Learning benchmark (Q-Learning, REINFORCE, DQN) on LunarLander-v3"
 readme = "README.md"
 requires-python = ">=3.10"
 authors = [
-    { name = "LunarLander RL Team" }
+    { name = "Ridwane777" }
 ]
 dependencies = [
     "gymnasium[box2d]",

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# LunarLander RLScript d'évaluation
+# Script d'évaluation
 # Ce script prépare l'environnement et lance l'évaluation déterministe
 
 # Se placer à la racine du projet

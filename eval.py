@@ -1,5 +1,5 @@
 """
-eval.py — LunarLander RLLunarLander-v3
+eval.py — LunarLander-v3
 ================================================
 Évalue les modèles .pth entraînés dans un environnement de test
 et génère un benchmark comparatif à partir de ces évaluations.

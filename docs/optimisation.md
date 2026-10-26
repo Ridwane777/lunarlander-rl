@@ -1,5 +1,5 @@
 # Analyse de l'Optimisation et Plan d'Amélioration
-**Projet  — LunarLander RL**
+**Projet LunarLander RL**
 
 Ce document détaille l'analyse technique des performances de nos agents et définit une feuille de route stratégique pour dépasser les limites actuelles du benchmark.
 

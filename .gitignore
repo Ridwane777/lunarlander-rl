@@ -2,4 +2,5 @@ venv
 rl_env/
 .venv
 __pycache__
-.pytest_cache
+.pytest_cachemodels/*.pth
+*.pyc
