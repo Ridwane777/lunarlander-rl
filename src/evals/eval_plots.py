@@ -27,7 +27,7 @@ def plot_mean_ci(metrics, out_dir):
     fig, ax = plt.subplots(figsize=(10, 5))
     bars = ax.bar(algos, means, yerr=ci95s, capsize=6,
                   color=colors, alpha=0.85, edgecolor="white", linewidth=0.8)
-    ax.axhline(200, color="green", linestyle="--", linewidth=1.5, label="Seuil succès 200")
+    ax.axhline(200, color="green", linestyle="--", linewidth=1.5, label="Success threshold 200")
     ax.axhline(0,   color="black", linewidth=0.6)
 
     for bar, m, ci in zip(bars, means, ci95s):
@@ -35,7 +35,7 @@ def plot_mean_ci(metrics, out_dir):
         ax.text(bar.get_x() + bar.get_width()/2, m + (ci if not math.isnan(ci) else 0) + 5,
                 label, ha="center", va="bottom", fontsize=8, fontweight="bold")
 
-    ax.set_title("Reward moyen ± IC 95% par agent (Évaluation)", fontsize=13, fontweight="bold")
+    ax.set_title("Mean reward ± 95% CI per agent (Evaluation)", fontsize=13, fontweight="bold")
     ax.set_ylabel("Reward moyen"); ax.set_xlabel("Agent")
     ax.legend(); ax.grid(axis="y", alpha=0.3)
     plt.xticks(rotation=15)
@@ -64,7 +64,7 @@ def plot_distribution(data, out_dir):
         patch.set_alpha(0.75)
 
     ax.axhline(200, color="green", linestyle="--", linewidth=1.5, label="Seuil 200")
-    ax.set_title("Distribution des rewards par agent (Évaluation)", fontsize=13)
+    ax.set_title("Reward distribution per agent (Evaluation)", fontsize=13)
     ax.set_ylabel("Total reward"); ax.legend()
     ax.grid(axis="y", alpha=0.3)
     plt.xticks(rotation=15)
@@ -100,8 +100,8 @@ def plot_termination(metrics, out_dir):
         ax.bar(algos, vals, bottom=bottoms, label=cause, color=color, alpha=0.85)
         bottoms = [b+v for b,v in zip(bottoms, vals)]
 
-    ax.set_title("Causes de terminaison par agent (%)", fontsize=13)
-    ax.set_ylabel("% épisodes"); ax.set_ylim(0, 105)
+    ax.set_title("Termination causes per agent (%)", fontsize=13)
+    ax.set_ylabel("% episodes"); ax.set_ylim(0, 105)
     ax.legend(fontsize=9); ax.grid(axis="y", alpha=0.3)
     plt.xticks(rotation=15)
     plt.tight_layout()
@@ -119,8 +119,8 @@ def plot_success_rate(metrics, out_dir):
     for bar, rate in zip(bars, rates):
         ax.text(bar.get_x() + bar.get_width()/2, rate + 0.5,
                 f"{rate:.1f}%", ha="center", va="bottom", fontsize=9)
-    ax.set_title("Taux de succès — épisodes avec reward ≥ 200", fontsize=13)
-    ax.set_ylabel("% épisodes ≥ 200"); ax.set_ylim(0, max(rates or [10]) * 1.2 + 5)
+    ax.set_title("Success rate — episodes with reward ≥ 200", fontsize=13)
+    ax.set_ylabel("% episodes ≥ 200"); ax.set_ylim(0, max(rates or [10]) * 1.2 + 5)
     ax.grid(axis="y", alpha=0.3)
     plt.xticks(rotation=15)
     plt.tight_layout()
@@ -130,7 +130,7 @@ def plot_success_rate(metrics, out_dir):
 
 
 def plot_episode_length(data, out_dir):
-    """Boxplot des longueurs d'épisodes par agent."""
+    """Boxplot of episode lengths per agent."""
     algos    = sorted(data.keys())
     all_lens = []
     labels   = []
@@ -149,7 +149,7 @@ def plot_episode_length(data, out_dir):
         patch.set_facecolor(color_of(algo))
         patch.set_alpha(0.75)
 
-    ax.set_title("Distribution de la longueur des épisodes par agent", fontsize=13)
+    ax.set_title("Episode length distribution per agent", fontsize=13)
     ax.set_ylabel("Longueur (steps)")
     ax.grid(axis="y", alpha=0.3)
     plt.xticks(rotation=15)

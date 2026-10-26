@@ -1,18 +1,18 @@
 """
 train.py — LunarLander-v3
 =================================================
-Entraîne tous les agents définis dans configs/ sur plusieurs seeds.
+Trains every agent defined in configs/ over several seeds.
 
 Usage:
-    python train.py                                          # tous les agents
-    python train.py --config configs/dqn_soft.yaml           # un seul agent
-    python train.py --config configs/dqn_soft.yaml --seed 0  # seed précise
-    python train.py --list                                   # liste les configs
+    python train.py                                          # all agents
+    python train.py --config configs/dqn_soft.yaml           # a single agent
+    python train.py --config configs/dqn_soft.yaml --seed 0  # a specific seed
+    python train.py --list                                   # list configs
 
-Sorties:
-    logs/<algo>_seed<N>.csv    — CSV épisodique
-    plots/<algo>/              — courbes reward + agrégé multi-seeds
-    models/<algo>_seed<N>.pth  — modèle entraîné
+Outputs:
+    logs/<algo>_seed<N>.csv    — per-episode CSV
+    plots/<algo>/              — reward curves + multi-seed aggregate
+    models/<algo>_seed<N>.pth  — trained model
 """
 
 import argparse
@@ -52,7 +52,7 @@ def run_config(config_path, seed_override=None):
     seeds = [seed_override] if seed_override is not None else cfg["seeds"]
 
     if algo not in TRAINERS:
-        print(f"[ERREUR] algo '{algo}' inconnu. Disponibles : {list(TRAINERS.keys())}")
+        print(f"[ERROR] unknown algo '{algo}'. Available: {list(TRAINERS.keys())}")
         return []
 
     trainer  = TRAINERS[algo]
@@ -89,16 +89,16 @@ def run_config(config_path, seed_override=None):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Entraîne les agents LunarLander depuis les configs YAML."
+        description="Train LunarLander agents from YAML configs."
     )
     parser.add_argument("--config", "-c",
-        help="Un fichier YAML précis. Absent = tous les fichiers de configs/.")
+        help="A specific YAML file. Default: every file in configs/.")
     parser.add_argument("--seed", "-s", type=int, default=None,
-        help="Force une seed unique.")
+        help="Force a single seed.")
     parser.add_argument("--list", "-l", action="store_true",
-        help="Liste les configs disponibles et quitte.")
+        help="List available configs and exit.")
     parser.add_argument("--plot-only", action="store_true",
-        help="Ne pas entraîner, juste régénérer les graphes depuis logs/train/")
+        help="Skip training; only regenerate plots from logs/train/")
     args = parser.parse_args()
 
     configs_dir = os.path.join(ROOT, "configs")
@@ -113,10 +113,10 @@ def main():
                     else sorted(glob.glob(os.path.join(configs_dir, "*.yaml"))))
 
     if not config_files:
-        print(f"Aucun YAML trouvé dans {configs_dir}/"); sys.exit(1)
+        print(f"No YAML found in {configs_dir}/"); sys.exit(1)
 
     if args.plot_only:
-        print("\n[PLOT ONLY] Régénération des graphiques d'entraînement...")
+        print("\n[PLOT ONLY] Regenerating training plots...")
         import pandas as pd
         import re
         from src.utils.plots import _plot_aggregate, _plot_training_stats

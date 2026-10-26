@@ -4,7 +4,7 @@ import torch.optim as optim
 from src.utils.replay_buffer import ReplayBuffer
 
 class QNetwork(nn.Module):
-    """Architecture Multi-Layer Perceptron (MLP) pour l'approximation de la Q-fonction."""
+    """Multi-Layer Perceptron (MLP) approximating the Q-function."""
     def __init__(self, obs_dim, n_actions, hidden=128):
         super().__init__()
         self.net = nn.Sequential(
@@ -19,7 +19,7 @@ class QNetwork(nn.Module):
         return self.net(x)
 
 class DQNAgent:
-    """Agent implémentant l'algorithme Deep Q-Network avec support du Double DQN et du Soft/Hard Update."""
+    """Deep Q-Network agent with Double DQN and soft/hard target updates."""
     def __init__(self, obs_dim, n_actions, config):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.n_actions = n_actions
@@ -31,16 +31,16 @@ class DQNAgent:
         self.soft_update = config.get("soft_update", False)
         self.tau = config.get("tau", 0.02)
 
-        # Stratégie Epsilon-greedy pour gérer le dilemme Exploration/Exploitation
+        # Epsilon-greedy strategy for the exploration/exploitation trade-off
         self.epsilon = config["epsilon_start"]
         self.epsilon_end = config["epsilon_end"]
         self.epsilon_decay = config["epsilon_decay"]
 
-        # Initialisation des deux réseaux : Policy (online) et Target (stable)
+        # Initialize both networks: policy (online) and target (stable)
         self.q_net = QNetwork(obs_dim, n_actions).to(self.device)
         self.target_net = QNetwork(obs_dim, n_actions).to(self.device)
         self.target_net.load_state_dict(self.q_net.state_dict())
-        self.target_net.eval() # Le target network ne s'entraîne jamais directement
+        self.target_net.eval() # The target network is never trained directly
 
         self.optimizer = optim.Adam(self.q_net.parameters(), lr=config["lr"])
         self.buffer = ReplayBuffer(config["buffer_size"], self.device)
@@ -48,7 +48,7 @@ class DQNAgent:
         self.t_step = 0
 
     def select_action(self, obs):
-        """Sélection d'action via politique epsilon-greedy."""
+        """Select an action with an epsilon-greedy policy."""
         if torch.rand(1).item() < self.epsilon:
             return torch.randint(self.n_actions, (1,)).item()
         
@@ -58,11 +58,11 @@ class DQNAgent:
         return q_values.argmax().item()
 
     def store(self, state, action, reward, next_state, done):
-        """Mise en mémoire de la transition dans le Replay Buffer."""
+        """Store the transition in the replay buffer."""
         self.buffer.push(state, action, reward, next_state, done)
 
     def update(self):
-        """Mise à jour des poids du réseau via échantillonnage du buffer."""
+        """Update network weights from a buffer sample."""
         self.t_step += 1
         if self.t_step % self.update_every != 0:
             return None
@@ -70,42 +70,42 @@ class DQNAgent:
         if len(self.buffer) < self.batch_size:
             return None
 
-        # Échantillonnage aléatoire d'un batch de transitions
+        # Randomly sample a batch of transitions
         states_t, actions_t, rewards_t, next_states_t, dones_t = self.buffer.sample(self.batch_size)
 
         # Calcul de Q(s,a) actuel
         q_values = self.q_net(states_t).gather(1, actions_t.unsqueeze(1)).squeeze(1)
 
-        # Double DQN : découplage de la sélection et de l'évaluation pour éviter la surestimation
-        # 1. Sélection de la meilleure action via le réseau principal
-        # 2. Évaluation de cette action via le réseau cible (Target Net)
+        # Double DQN: decouple selection and evaluation to avoid overestimation
+        # 1. Select the best action with the policy network
+        # 2. Evaluate that action with the target network
         with torch.no_grad():
             best_actions = self.q_net(next_states_t).argmax(1)
             next_q = self.target_net(next_states_t).gather(1, best_actions.unsqueeze(1)).squeeze(1)
             targets = rewards_t + self.gamma * next_q * (1 - dones_t)
 
-        # Calcul de l'erreur quadratique moyenne (MSE Loss)
+        # Mean squared error (MSE loss)
         loss = nn.MSELoss()(q_values, targets)
         
         self.optimizer.zero_grad()
         loss.backward()
-        # Écrêtage du gradient pour la stabilité numérique
+        # Gradient clipping for numerical stability
         nn.utils.clip_grad_norm_(self.q_net.parameters(), self.grad_clip)
         self.optimizer.step()
 
-        # Mise à jour synchronisée du Target Network
+        # Synchronize the target network
         self.step_count += 1
         if self.soft_update:
             # Polyak averaging : θ_target = τ*θ_local + (1-τ)*θ_target
             for p, tp in zip(self.q_net.parameters(), self.target_net.parameters()):
                 tp.data.copy_(self.tau * p.data + (1 - self.tau) * tp.data)
         else:
-            # Hard update : copie intégrale tous les N pas
+            # Hard update: full copy every N steps
             if self.step_count % self.target_update_freq == 0:
                 self.target_net.load_state_dict(self.q_net.state_dict())
 
         return loss.item()
 
     def decay_epsilon(self):
-        """Réduction progressive de l'exploration."""
+        """Gradually reduce exploration."""
         self.epsilon = max(self.epsilon_end, self.epsilon * self.epsilon_decay)

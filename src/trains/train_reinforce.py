@@ -6,10 +6,10 @@ from src.utils.logger import EpisodeLogger
 from src.utils.core import set_seed, _result
 
 def train_reinforce(cfg, seed, log_path):
-    """Boucle d'entraînement pour l'algorithme REINFORCE (Policy Gradient).
+    """Training loop for REINFORCE (policy gradient).
     
-    À l'inverse du DQN, cet agent est On-Policy et n'effectue sa mise à jour 
-    qu'à la FIN de chaque épisode en utilisant la trajectoire complète.
+    Unlike DQN, this agent is on-policy and only updates at the END
+    of each episode, using the full trajectory.
     """
     algo = cfg["algo"]
     hp  = cfg["hyperparameters"]
@@ -29,17 +29,17 @@ def train_reinforce(cfg, seed, log_path):
     t0 = time.time()
 
     for _ in range(cfg["max_steps"]):
-        # 1. Sélection d'action (stochastique)
+        # 1. Action selection (stochastic)
         action = agent.select_action(obs)
         next_obs, reward, terminated, truncated, info = env.step(action)
         done = terminated or truncated
 
-        # 2. Collecte de la trajectoire
+        # 2. Collect the trajectory
         agent.store_reward(reward)
         obs = next_obs; ep_return += reward; ep_len += 1
 
         if done:
-            # 3. Mise à jour de la politique (Théorème du Gradient de Politique)
+            # 3. Policy update (policy gradient theorem)
             loss = agent.update()
             ep_returns.append(ep_return)
             
@@ -47,15 +47,15 @@ def train_reinforce(cfg, seed, log_path):
             print(f"[reinforce|s{seed}] ep={episode:4d} R={ep_return:8.1f} "
                   f"len={ep_len:4d} loss={loss:.4f}")
 
-            # Vérification du succès
+            # Check for success
             if episode >= cfg["success_window"] - 1:
                 mw = sum(ep_returns[-cfg["success_window"]:]) / cfg["success_window"]
                 if mw >= cfg["success_threshold"] and solved_at is None:
                     solved_at = episode
-                    print(f"\n[reinforce|s{seed}] RÉSOLU ep={episode} (mean100={mw:.1f})\n")
+                    print(f"\n[reinforce|s{seed}] SOLVED ep={episode} (mean100={mw:.1f})\n")
                     break
 
-            # Reset pour le prochain épisode
+            # Reset for the next episode
             ep_return = 0.0; ep_len = 0; episode += 1
             obs, _ = env.reset()
 

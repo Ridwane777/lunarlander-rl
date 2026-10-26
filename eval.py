@@ -1,11 +1,11 @@
 """
 eval.py — LunarLander-v3
 ================================================
-Évalue les modèles .pth entraînés dans un environnement de test
-et génère un benchmark comparatif à partir de ces évaluations.
+Evaluates trained .pth models in a test environment
+and builds a comparative benchmark from those evaluations.
 
 Usage:
-    python eval.py                      # tous les modèles disponibles dans models/
+    python eval.py                      # all models available in models/
     python eval.py --models models/dqn_soft_seed*.pth
     python eval.py --out plots/benchmark
 """
@@ -32,27 +32,27 @@ from src.evals.eval_utils import save_summary_csv, print_verdict
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Évaluation des modèles .pth et benchmark."
+        description="Evaluate .pth models and build the benchmark."
     )
     parser.add_argument("--models", nargs="*",
-        help="Chemins des .pth à évaluer. Absent = tous les models/*.pth")
+        help=".pth paths to evaluate. Default: all models/*.pth")
     parser.add_argument("--n_episodes", type=int, default=100,
-        help="Nombre d'épisodes de test par modèle.")
+        help="Number of test episodes per model.")
     parser.add_argument("--out", default="plots/benchmark",
-        help="Dossier de sortie pour les graphes (défaut: plots/benchmark)")
+        help="Output directory for plots (default: plots/benchmark)")
     parser.add_argument("--plot-only", action="store_true",
-        help="Ne pas évaluer les modèles, juste régénérer les graphes depuis logs/eval/")
+        help="Skip evaluation; only regenerate plots from logs/eval/")
     args = parser.parse_args()
 
     eval_logs_paths = []
 
     if args.plot_only:
-        print("\n[PLOT ONLY] Mode graphique seul activé.")
+        print("\n[PLOT ONLY] Plot-only mode enabled.")
         eval_logs_paths = sorted(glob.glob(os.path.join(ROOT, "logs", "eval", "*.csv")))
         if not eval_logs_paths:
-            print("Aucun log d'évaluation trouvé dans logs/eval/. Lancez d'abord une évaluation.")
+            print("No evaluation logs found in logs/eval/. Run an evaluation first.")
             sys.exit(1)
-        print(f"Trouvé {len(eval_logs_paths)} fichiers de logs d'évaluation.")
+        print(f"Found {len(eval_logs_paths)} evaluation log files.")
     else:
         if args.models:
             model_paths = args.models
@@ -60,14 +60,14 @@ def main():
             model_paths = sorted(glob.glob(os.path.join(ROOT, "models", "*.pth")))
 
         if not model_paths:
-            print("Aucun modèle (.pth) trouvé. Lancez d'abord l'entraînement (python train.py).")
+            print("No model (.pth) found. Run training first (python train.py).")
             sys.exit(1)
 
-        print(f"\nModèles à évaluer ({len(model_paths)}) :")
+        print(f"\nModels to evaluate ({len(model_paths)}) :")
         for p in model_paths:
             print(f"  {p}")
 
-        # Boucle d'évaluation
+        # Evaluation loop
         for path in model_paths:
             algo = algo_from_path(path)
             m = re.search(r"seed(\d+)", os.path.basename(path))
@@ -78,7 +78,7 @@ def main():
                 if algo == "dqn":
                     config_path = os.path.join(ROOT, "configs", "dqn_hard.yaml")
                 if not os.path.exists(config_path):
-                    print(f"[ATTENTION] Config introuvable pour {path}, passage.")
+                    print(f"[WARNING] Config not found for {path}, skipping.")
                     continue
                 
             log_path = evaluate_model(path, config_path, algo, seed, n_episodes=args.n_episodes)
@@ -86,16 +86,16 @@ def main():
                 eval_logs_paths.append(log_path)
 
     if not eval_logs_paths:
-        print("Aucune évaluation n'a abouti.")
+        print("No evaluation succeeded.")
         sys.exit(1)
 
-    # Analyses et graphes
+    # Analysis and plots
     data    = load_all(eval_logs_paths)
     metrics = compute_metrics(data)
     out_dir = os.path.join(ROOT, args.out)
     os.makedirs(out_dir, exist_ok=True)
 
-    print(f"\nGénération des graphes dans {out_dir}/")
+    print(f"\nGenerating plots in {out_dir}/")
     plot_mean_ci(metrics, out_dir)
     plot_distribution(data, out_dir)
     plot_termination(metrics, out_dir)

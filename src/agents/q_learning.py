@@ -3,32 +3,32 @@ import random
 from collections import defaultdict
 
 class QLearningAgent:
-    """Agent implémentant l'algorithme Q-Learning tabulaire.
-    Nécessite une discrétisation de l'espace des états continu.
+    """Tabular Q-Learning agent.
+    Requires discretizing the continuous state space.
     """
     def __init__(self, n_actions, config):
         self.n_actions = n_actions
         self.gamma = config["gamma"]  # Facteur de remise
         self.lr = config["lr"]        # Taux d'apprentissage
 
-        # Paramètres de la stratégie epsilon-greedy
+        # Epsilon-greedy parameters
         self.epsilon = config["epsilon_start"]
         self.epsilon_end = config["epsilon_end"]
         self.epsilon_decay = config["epsilon_decay"]
 
-        # Q-table : dictionnaire associant un état discrétisé à un vecteur d'actions
+        # Q-table: dict mapping a discretized state to an action-value vector
         self.q_table = defaultdict(lambda: np.zeros(n_actions))
 
     def discretize(self, obs):
-        """Transforme le vecteur d'observation continu (dim 8) en un tuple d'entiers (état discret).
-        Cette étape est cruciale pour le Q-Learning tabulaire afin de limiter la taille de la table.
+        """Convert the continuous observation vector (dim 8) into an integer tuple (discrete state).
+        This is key for tabular Q-Learning to keep the table size bounded.
         """
-        # Taille des "cases" (bins) pour chaque dimension de l'observation
+        # Bin size for each observation dimension
         bins = np.array([0.5, 0.5, 0.2, 0.2, 0.1, 0.1, 1.0, 1.0])
         return tuple((obs / bins).astype(int))
 
     def select_action(self, obs):
-        """Sélection d'action epsilon-greedy sur l'état discrétisé."""
+        """Epsilon-greedy action selection on the discretized state."""
         state = self.discretize(obs)
 
         # Exploration
@@ -39,20 +39,20 @@ class QLearningAgent:
         return np.argmax(self.q_table[state])
 
     def update(self, state, action, reward, next_state, done):
-        """Mise à jour de la Q-table selon l'équation de Bellman temporelle.
+        """Update the Q-table with the temporal-difference Bellman equation.
         Q(s,a) = Q(s,a) + α * [R + γ * max(Q(s',a')) - Q(s,a)]
         """
         s = self.discretize(state)
         s_next = self.discretize(next_state)
 
-        # Estimation de la valeur future maximale
+        # Estimate the maximum future value
         best_next = np.max(self.q_table[s_next])
 
-        # Cible (Target) de mise à jour
+        # Update target
         target = reward + self.gamma * best_next * (1 - done)
 
-        # Mise à jour incrémentale
+        # Incremental update
         self.q_table[s][action] += self.lr * (target - self.q_table[s][action])
 
-        # Décroissance de l'exploration
+        # Exploration decay
         self.epsilon = max(self.epsilon_end, self.epsilon * self.epsilon_decay)

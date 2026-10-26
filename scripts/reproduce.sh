@@ -2,19 +2,19 @@
 # =============================================================================
 # reproduce.sh — LunarLander-v3
 # =============================================================================
-# Régénère TOUS les résultats du projet en une seule commande :
-#   1. Vérifie l'environnement Python
-#   2. Installe les dépendances
-#   3. Entraîne tous les agents (5 seeds × 5 algos)
-#   4. Génère le benchmark comparatif et tous les graphes
+# Regenerates ALL project results with a single command:
+#   1. Checks the Python environment
+#   2. Installs dependencies
+#   3. Trains every agent (5 seeds × 5 algos)
+#   4. Builds the comparative benchmark and all plots
 #
 # Usage :
-#   bash reproduce.sh                  # entraînement complet
-#   bash reproduce.sh --eval-only      # benchmark uniquement (logs déjà présents)
-#   bash reproduce.sh --agent dqn_soft # un seul agent
-#   bash reproduce.sh --seed 0         # une seule seed
+#   bash reproduce.sh                  # full training
+#   bash reproduce.sh --eval-only      # benchmark only (logs already present)
+#   bash reproduce.sh --agent dqn_soft # a single agent
+#   bash reproduce.sh --seed 0         # a single seed
 #
-# Reproductibilité garantie à ±5% avec les mêmes seeds (0..4).
+# Results reproduce within ±5% with the same seeds (0..4).
 # =============================================================================
 
 set -euo pipefail
@@ -28,7 +28,7 @@ success() { echo -e "${GREEN}[OK]${NC}    $*"; }
 warn()    { echo -e "${YELLOW}[WARN]${NC}  $*"; }
 error()   { echo -e "${RED}[ERROR]${NC} $*" >&2; exit 1; }
 
-# ── paramètres ────────────────────────────────────────────────────────────────
+# ── parameters ────────────────────────────────────────────────────────────────
 EVAL_ONLY=false
 AGENT=""
 SEED_ARG=""
@@ -45,7 +45,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# ── répertoire racine ─────────────────────────────────────────────────────────
+# ── root directory ─────────────────────────────────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$SCRIPT_DIR"
 
@@ -55,8 +55,8 @@ echo -e "${BOLD}  LunarLander RL — Reproduce Script${NC}"
 echo -e "${BOLD}============================================================${NC}"
 echo ""
 
-# ── 1. vérification Python ────────────────────────────────────────────────────
-info "Vérification de Python..."
+# ── 1. check Python ────────────────────────────────────────────────────
+info "Checking Python..."
 
 if ! command -v python3 &>/dev/null; then
   error "python3 introuvable. Installe Python 3.12+."
@@ -71,29 +71,29 @@ if [[ "$PY_MAJOR" -lt 3 ]] || [[ "$PY_MAJOR" -eq 3 && "$PY_MINOR" -lt 10 ]]; the
 fi
 success "Python $PY_VERSION"
 
-# ── 2. dépendances ────────────────────────────────────────────────────────────
-info "Installation des dépendances..."
+# ── 2. dependencies ────────────────────────────────────────────────────────────
+info "Installing dependencies..."
 pip install -q -r requirements.txt
-success "Dépendances installées"
+success "Dependencies installed"
 
-# Vérifie gymnasium[box2d]
+# Check gymnasium[box2d]
 python3 -c "import gymnasium; gym_v=gymnasium.__version__; print(f'gymnasium {gym_v}')" || \
   { warn "gymnasium manquant, installation..."; pip install -q "gymnasium[box2d]"; }
 
 python3 -c "import torch; print(f'torch {torch.__version__}')" 2>/dev/null || \
-  error "torch introuvable après installation"
+  error "torch not found after installation"
 
 python3 -c "import yaml" 2>/dev/null || \
   { warn "pyyaml manquant, installation..."; pip install -q pyyaml; }
 
-# ── 3. création des dossiers ──────────────────────────────────────────────────
+# ── 3. create directories ──────────────────────────────────────────────────
 mkdir -p logs/train logs/eval plots videos models configs
-success "Dossiers créés"
+success "Directories created"
 
-# ── 4. entraînement ───────────────────────────────────────────────────────────
+# ── 4. training ───────────────────────────────────────────────────────────
 if [[ "$EVAL_ONLY" == false ]]; then
   echo ""
-  echo -e "${BOLD}--- Entraînement ---${NC}"
+  echo -e "${BOLD}--- Training ---${NC}"
 
   if [[ -n "$AGENT" ]]; then
     CONFIG="configs/${AGENT}.yaml"
@@ -103,7 +103,7 @@ if [[ "$EVAL_ONLY" == false ]]; then
     info "Agent : $AGENT | config : $CONFIG"
     python3 train.py --config "$CONFIG" $SEED_ARG
   else
-    info "Entraînement de tous les agents (5 seeds x 5 configs)..."
+    info "Training all agents (5 seeds x 5 configs)..."
     for CONFIG in configs/*.yaml; do
       ALGO=$(basename "$CONFIG" .yaml)
       info "→ $ALGO ..."
@@ -111,7 +111,7 @@ if [[ "$EVAL_ONLY" == false ]]; then
     done
   fi
 
-  success "Entraînement terminé — logs dans logs/train/"
+  success "Training finished — logs in logs/train/"
 fi
 
 # ── 5. benchmark & graphes ───────────────────────────────────────────────────
@@ -120,21 +120,21 @@ echo -e "${BOLD}--- Benchmark & graphes ---${NC}"
 
 if ls models/*.pth &>/dev/null; then
   python3 eval.py
-  success "Benchmark terminé — graphes dans plots/benchmark/"
+  success "Benchmark finished — plots in plots/benchmark/"
 else
-  warn "Aucun modèle .pth dans models/ — lance d'abord l'entraînement."
+  warn "No .pth model in models/ — run training first."
 fi
 
-# ── 6. résumé ────────────────────────────────────────────────────────────────
+# ── 6. summary ────────────────────────────────────────────────────────────────
 echo ""
 echo -e "${BOLD}============================================================${NC}"
-echo -e "${GREEN}${BOLD}  Reproduction terminée avec succès.${NC}"
-echo -e "${BOLD}  Résultats :${NC}"
+echo -e "${GREEN}${BOLD}  Reproduction completed successfully.${NC}"
+echo -e "${BOLD}  Results:${NC}"
 echo -e "    logs/train/    — CSV d'apprentissage"
-echo -e "    logs/eval/     — CSV des tests d'évaluation déterministe"
-echo -e "    models/        — Poids des modèles (.pth)"
-echo -e "    videos/train/  — Vidéos d'entraînement"
-echo -e "    videos/evals/  — Vidéos de tests"
-echo -e "    plots/         — Courbes d'entraînement et benchmark comparatif"
+echo -e "    logs/eval/     — deterministic evaluation CSVs"
+echo -e "    models/        — model weights (.pth)"
+echo -e "    videos/train/  — training videos"
+echo -e "    videos/evals/  — test videos"
+echo -e "    plots/         — training curves and comparative benchmark"
 echo -e "${BOLD}============================================================${NC}"
 echo ""

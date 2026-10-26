@@ -1,27 +1,27 @@
 #!/bin/bash
 
-# Script d'évaluation
-# Ce script prépare l'environnement et lance l'évaluation déterministe
+# Evaluation script
+# Sets up the environment and runs the deterministic evaluation
 
-# Se placer à la racine du projet
+# Move to the project root
 cd "$(dirname "$0")/.." || exit 1
 
 echo "============================================================"
-echo "🚀 Démarrage du Benchmark d'Évaluation (LunarLander-v3)"
+echo "🚀 Starting evaluation benchmark (LunarLander-v3)"
 echo "============================================================"
 
-# 1. Vérification de Python 3
+# 1. Check Python 3
 if ! command -v python3 &> /dev/null; then
-    echo "❌ Erreur : python3 n'est pas installé sur ce système."
+    echo "❌ Error: python3 is not installed on this system."
     exit 1
 fi
 
 # 2. Gestion de l'environnement virtuel
 if [ ! -d "venv" ]; then
-    echo "📦 Création de l'environnement virtuel (venv)..."
+    echo "📦 Creating virtual environment (venv)..."
     python3 -m venv venv
     if [ $? -ne 0 ]; then
-        echo "❌ Échec de la création de l'environnement virtuel. Le paquet python3-venv est-il installé ?"
+        echo "❌ Failed to create the virtual environment. Is python3-venv installed?"
         exit 1
     fi
 fi
@@ -29,36 +29,36 @@ fi
 echo "🔄 Activation de l'environnement virtuel..."
     source venv/bin/activate
 
-# 3. Installation des dépendances
+# 3. Install dependencies
 if [ -f "requirements.txt" ]; then
-    echo "📥 Vérification et installation des dépendances (patientez un instant)..."
+    echo "📥 Checking and installing dependencies (please wait)..."
     pip install --upgrade pip -q
     pip install -r requirements.txt -q
 else
     echo "⚠️  Attention : Fichier requirements.txt introuvable !"
 fi
 
-# 4. Vérification de la présence des modèles
+# 4. Check that models exist
 if ! ls models/*.pth 1> /dev/null 2>&1; then
     echo ""
-    echo "❌ Erreur : Aucun modèle (.pth) n'a été trouvé dans le dossier models/."
-    echo "   Veuillez entraîner vos agents d'abord en lançant : python train.py"
+    echo "❌ Error: no model (.pth) found in models/."
+    echo "   Train your agents first with: python train.py"
     echo "============================================================"
     exit 1
 fi
 
 echo "============================================================"
-echo "🎯 Évaluation des agents pré-entraînés sur 100 épisodes."
-echo "   Cette étape va prendre quelques minutes..."
+echo "🎯 Evaluating pre-trained agents over 100 episodes."
+echo "   This will take a few minutes..."
 echo "============================================================"
 echo ""
 
-# 5. Lancer l'évaluation
+# 5. Run the evaluation
 python3 eval.py
 
 echo ""
 echo "============================================================"
-echo "✅ Évaluation terminée avec succès !"
+echo "✅ Evaluation completed successfully!"
 echo "📊 Graphiques comparatifs : plots/benchmark/"
-echo "🎬 Vidéos des atterrissages : videos/evals/"
+echo "🎬 Landing videos: videos/evals/"
 echo "============================================================"

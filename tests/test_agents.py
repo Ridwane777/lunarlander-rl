@@ -36,7 +36,7 @@ def test_random_agent():
 
 def test_heuristic_agent():
     agent = HeuristicAgent()
-    # Test descente rapide (devrait activer le moteur principal - action 2)
+    # Fast descent test (should fire the main engine - action 2)
     obs = np.array([0, 0.4, 0, -2.0, 0, 0, 0, 0])
     action = agent.select_action(obs)
     assert action == 2

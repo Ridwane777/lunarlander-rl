@@ -1,313 +1,313 @@
-# Benchmark LunarLander-v3
+# LunarLander-v3 Benchmark
 
-Ce document regroupe les résultats d'entraînement et d'évaluation des différents agents.
+This document gathers the training and evaluation results of the different agents.
 
 ## 1. Random Agent (Baseline)
 
-L'agent aléatoire choisit ses actions uniformément au hasard. Il sert de base de comparaison pour les autres algorithmes.
+The random agent picks its actions uniformly at random. It serves as the comparison baseline for the other algorithms.
 
-### Entraînement
-- **Config** : `configs/random.yaml`
-- **Graines (Seeds)** : [0, 1, 2, 3, 4]
-- **Nombre de pas max** : 50 000
+### Training
+- **Config**: `configs/random.yaml`
+- **Seeds**: [0, 1, 2, 3, 4]
+- **Max steps**: 50 000
 
-| Seed | Épisodes | Reward Moyen | Reward Max | Status | Temps |
+| Seed | Episodes | Mean Reward | Max Reward | Status | Time |
 |------|----------|--------------|------------|--------|-------|
-| 0    | 528      | -180.5       | 77.1       | Terminé| ~60s  |
-| 1    | 543      | -178.1       | 28.4       | Terminé| ~60s  |
-| 2    | 525      | -179.2       | 37.1       | Terminé| ~60s  |
-| 3    | 532      | -181.8       | 39.3       | Terminé| ~60s  |
-| 4    | 540      | -186.3       | 74.3       | Terminé| ~60s  |
+| 0    | 528      | -180.5       | 77.1       | Done   | ~60s  |
+| 1    | 543      | -178.1       | 28.4       | Done   | ~60s  |
+| 2    | 525      | -179.2       | 37.1       | Done   | ~60s  |
+| 3    | 532      | -181.8       | 39.3       | Done   | ~60s  |
+| 4    | 540      | -186.3       | 74.3       | Done   | ~60s  |
 
-### Évaluation (100 épisodes par seed, soit 500 épisodes au total)
-- **Reward Moyen** : -184.6 ± 9.6
-- **Taux de succès** : 0.0%
-- **Cause de fin** : Principalement 'crash' (l'agent ne sait pas se poser).
-- **Max Reward** : 72.2
+### Evaluation (100 episodes per seed, 500 episodes in total)
+- **Mean Reward**: -184.6 ± 9.6
+- **Success rate**: 0.0%
+- **End cause**: Mostly 'crash' (the agent cannot land).
+- **Max Reward**: 72.2
 
-### Hyperparamètres
-Aucun (agent purement aléatoire).
+### Hyperparameters
+None (purely random agent).
 
 ### Conclusion
-L'agent aléatoire affiche des performances extrêmement faibles avec un reward moyen de **-184.6**. Le taux de succès est de **0%**, ce qui confirme que la probabilité de réussir un atterrissage par pur hasard est quasi nulle. Cet agent servira de "zéro de référence" pour mesurer l'apprentissage des futurs agents (DQN, REINFORCE, etc.). Tout algorithme d'apprentissage devra impérativement dépasser ces scores pour être considéré comme fonctionnel.
+The random agent performs extremely poorly, with a mean reward of **-184.6**. The success rate is **0%**, confirming that the probability of landing by pure chance is close to zero. This agent serves as the "reference zero" to measure the learning of later agents (DQN, REINFORCE, etc.). Any learning algorithm must beat these scores to be considered functional.
 
 ---
 
 ## 2. Heuristic Agent (Baseline)
 
-L'agent heuristique utilise un ensemble de règles codées à la main (basées sur la position, l'angle et la vitesse) pour tenter de stabiliser le lander.
+The heuristic agent uses a set of hand-coded rules (based on position, angle and velocity) to try to stabilize the lander.
 
-### Entraînement
-- **Config** : `configs/heuristic.yaml`
-- **Graines (Seeds)** : [0, 1, 2, 3, 4]
-- **Nombre de pas max** : 50 000
+### Training
+- **Config**: `configs/heuristic.yaml`
+- **Seeds**: [0, 1, 2, 3, 4]
+- **Max steps**: 50 000
 
-| Seed | Épisodes | Reward Moyen | Reward Max | Status | Temps |
+| Seed | Episodes | Mean Reward | Max Reward | Status | Time |
 |------|----------|--------------|------------|--------|-------|
-| 0    | 716      | -226.0       | 38.2       | Terminé| ~60s  |
-| 1    | 718      | -219.1       | 55.5       | Terminé| ~60s  |
-| 2    | 714      | -215.7       | 19.1       | Terminé| ~60s  |
-| 3    | 706      | -223.2       | 32.7       | Terminé| ~60s  |
-| 4    | 709      | -226.4       | 7.8        | Terminé| ~60s  |
+| 0    | 716      | -226.0       | 38.2       | Done   | ~60s  |
+| 1    | 718      | -219.1       | 55.5       | Done   | ~60s  |
+| 2    | 714      | -215.7       | 19.1       | Done   | ~60s  |
+| 3    | 706      | -223.2       | 32.7       | Done   | ~60s  |
+| 4    | 709      | -226.4       | 7.8        | Done   | ~60s  |
 
-### Évaluation (100 épisodes par seed, soit 500 épisodes au total)
-- **Reward Moyen** : -219.8 ± 14.9
-- **Taux de succès** : 0.0%
-- **Cause de fin** : Exclusivement 'crash'.
-- **Max Reward** : 55.5
+### Evaluation (100 episodes per seed, 500 episodes in total)
+- **Mean Reward**: -219.8 ± 14.9
+- **Success rate**: 0.0%
+- **End cause**: Exclusively 'crash'.
+- **Max Reward**: 55.5
 
-### Hyperparamètres
-Aucun (règles fixes).
+### Hyperparameters
+None (fixed rules).
 
 ### Conclusion
-Contre-intuitivement, l'agent heuristique obtient des résultats **inférieurs** à l'agent aléatoire sur cette configuration (-219.8 contre -184.6). Bien qu'il tente de stabiliser l'appareil, ses règles codées semblent provoquer des crashs plus systématiques ou plus pénalisants. Cela montre qu'une stratégie naïve, même intentionnelle, peut être moins efficace qu'une absence totale de stratégie dans certains environnements complexes. L'apprentissage par renforcement sera crucial pour trouver un équilibre que les règles manuelles n'atteignent pas ici.
+Counter-intuitively, the heuristic agent scores **lower** than the random agent in this setup (-219.8 vs -184.6). Although it tries to stabilize the craft, its coded rules seem to cause more systematic or more heavily penalized crashes. This shows that a naive strategy, even an intentional one, can be less effective than no strategy at all in some complex environments. Reinforcement learning is needed to find a balance that the manual rules do not reach here.
 
 ---
 
-## 3. Q-Learning (Tabulaire) - Config 1
+## 3. Q-Learning (Tabular) - Config 1
 
-Le Q-Learning est un algorithme d'apprentissage par renforcement hors-politique (off-policy). Comme l'espace des observations est continu, il nécessite une discrétisation pour être utilisé de manière tabulaire.
+Q-Learning is an off-policy reinforcement learning algorithm. Since the observation space is continuous, it must be discretized to be used in tabular form.
 
-### Entraînement
-- **Config** : `configs/q_learning.yaml`
-- **Graines (Seeds)** : [0, 1, 2, 3, 4]
-- **Nombre de pas max** : 200 000
+### Training
+- **Config**: `configs/q_learning.yaml`
+- **Seeds**: [0, 1, 2, 3, 4]
+- **Max steps**: 200 000
 
-| Seed | Épisodes | Reward Moyen | Reward Max | Status | Temps |
+| Seed | Episodes | Mean Reward | Max Reward | Status | Time |
 |------|----------|--------------|------------|--------|-------|
-| 0    | 840      | -101.6       | 254.4      | Terminé| ~7min |
-| 1    | 898      | -108.9       | 254.3      | Terminé| ~7min |
-| 2    | 810      | -93.6        | 263.7      | Terminé| ~7min |
-| 3    | 915      | -122.4       | 285.6      | Terminé| ~7min |
-| 4    | 833      | -91.9        | 268.0      | Terminé| ~7min |
+| 0    | 840      | -101.6       | 254.4      | Done   | ~7min |
+| 1    | 898      | -108.9       | 254.3      | Done   | ~7min |
+| 2    | 810      | -93.6        | 263.7      | Done   | ~7min |
+| 3    | 915      | -122.4       | 285.6      | Done   | ~7min |
+| 4    | 833      | -91.9        | 268.0      | Done   | ~7min |
 
-### Évaluation (100 épisodes par seed, soit 500 épisodes au total)
-- **Reward Moyen** : -41.8 ± 16.1
-- **Taux de succès** : 18.2%
-- **Cause de fin** : Mélange de 'crash', 'solved' et 'timeout'.
-- **Max Reward** : 285.6
+### Evaluation (100 episodes per seed, 500 episodes in total)
+- **Mean Reward**: -41.8 ± 16.1
+- **Success rate**: 18.2%
+- **End cause**: Mix of 'crash', 'solved' and 'timeout'.
+- **Max Reward**: 285.6
 
-### Hyperparamètres
-- **Gamma** : 0.99
-- **Learning Rate (LR)** : 0.1
-- **Epsilon** : 1.0 -> 0.01 (decay 0.995)
+### Hyperparameters
+- **Gamma**: 0.99
+- **Learning Rate (LR)**: 0.1
+- **Epsilon**: 1.0 -> 0.01 (decay 0.995)
 
 ### Conclusion
-Le Q-Learning tabulaire montre une progression nette par rapport aux baselines. Avec un taux de succès de **18.2%**, l'agent commence à comprendre comment stabiliser le lander et se poser, même si l'espace discrétisé limite sa précision. On observe que l'agent réussit parfois des atterrissages parfaits (> 200 points). Cependant, la moyenne reste négative car les crashs sont encore fréquents et lourdement pénalisés.
+Tabular Q-Learning clearly improves on the baselines. With an **18.2%** success rate, the agent starts to understand how to stabilize and land, even though the discretized space limits its precision. The agent sometimes achieves perfect landings (> 200 points). However, the mean stays negative because crashes are still frequent and heavily penalized.
 
 ---
 
-## 4. Q-Learning (Tabulaire) - Config 2
+## 4. Q-Learning (Tabular) - Config 2
 
-Cette version utilise une exploration plus longue (`epsilon_decay=0.999`) et un taux d'apprentissage plus faible (`lr=0.05`) pour voir si une convergence plus lente améliore la stabilité.
+This version uses longer exploration (`epsilon_decay=0.999`) and a lower learning rate (`lr=0.05`) to see whether slower convergence improves stability.
 
-### Entraînement
-- **Config** : `configs/q_learning_v2.yaml`
-- **Graines (Seeds)** : [0, 1, 2, 3, 4]
-- **Nombre de pas max** : 200 000
+### Training
+- **Config**: `configs/q_learning_v2.yaml`
+- **Seeds**: [0, 1, 2, 3, 4]
+- **Max steps**: 200 000
 
-| Seed | Épisodes | Reward Moyen | Reward Max | Status | Temps |
+| Seed | Episodes | Mean Reward | Max Reward | Status | Time |
 |------|----------|--------------|------------|--------|-------|
-| 0    | 1031     | -153.2       | 261.8      | Terminé| ~7min |
-| 1    | 952      | -117.1       | 262.2      | Terminé| ~7min |
-| 2    | 921      | -117.7       | 257.4      | Terminé| ~7min |
-| 3    | 997      | -138.1       | 257.0      | Terminé| ~7min |
-| 4    | 990      | -116.7       | 280.4      | Terminé| ~7min |
+| 0    | 1031     | -153.2       | 261.8      | Done   | ~7min |
+| 1    | 952      | -117.1       | 262.2      | Done   | ~7min |
+| 2    | 921      | -117.7       | 257.4      | Done   | ~7min |
+| 3    | 997      | -138.1       | 257.0      | Done   | ~7min |
+| 4    | 990      | -116.7       | 280.4      | Done   | ~7min |
 
-### Évaluation (100 épisodes par seed, soit 500 épisodes au total)
-- **Reward Moyen** : -92.7 ± 14.4
-- **Taux de succès** : 11.6%
-- **Cause de fin** : Principalement 'crash', quelques 'solved'.
-- **Max Reward** : 280.4
+### Evaluation (100 episodes per seed, 500 episodes in total)
+- **Mean Reward**: -92.7 ± 14.4
+- **Success rate**: 11.6%
+- **End cause**: Mostly 'crash', a few 'solved'.
+- **Max Reward**: 280.4
 
-### Hyperparamètres
-- **Gamma** : 0.99
-- **Learning Rate (LR)** : 0.05 (contre 0.1 en Config 1)
-- **Epsilon** : 1.0 -> 0.01 (decay 0.999 contre 0.995)
+### Hyperparameters
+- **Gamma**: 0.99
+- **Learning Rate (LR)**: 0.05 (vs 0.1 in Config 1)
+- **Epsilon**: 1.0 -> 0.01 (decay 0.999 vs 0.995)
 
 ### Conclusion
-La Config 2, malgré une exploration plus longue et un apprentissage plus prudent, obtient des résultats **moins bons** que la Config 1 (-92.7 contre -41.8 de moyenne). Le taux de succès chute également à **11.6%**. Il est probable que le taux d'apprentissage trop faible ralentisse excessivement la convergence, et que l'exploration prolongée empêche l'agent de stabiliser sa politique dans le temps imparti (200 000 pas). La Config 1 reste donc notre meilleure approche pour le Q-Learning tabulaire.
+Despite longer exploration and more cautious learning, Config 2 performs **worse** than Config 1 (-92.7 vs -41.8 mean). The success rate also drops to **11.6%**. The too-low learning rate likely slows convergence excessively, and the extended exploration prevents the agent from stabilizing its policy within the allotted budget (200 000 steps). Config 1 therefore remains our best tabular Q-Learning approach.
 
-### Synthèse Comparative Q-Learning
-| Config | Reward Moyen | Taux de Succès | Observation Clé |
+### Q-Learning Comparison
+| Config | Mean Reward | Success Rate | Key Observation |
 |--------|--------------|----------------|-----------------|
-| Config 1 (LR 0.1, Decay 0.995) | **-41.8** | **18.2%** | Convergence plus rapide et meilleure exploitation. |
-| Config 2 (LR 0.05, Decay 0.999) | -92.7 | 11.6% | Exploration trop longue, manque de temps pour converger. |
+| Config 1 (LR 0.1, Decay 0.995) | **-41.8** | **18.2%** | Faster convergence and better exploitation. |
+| Config 2 (LR 0.05, Decay 0.999) | -92.7 | 11.6% | Exploration too long, not enough time to converge. |
 
-**Verdict** : La **Config 1** est la plus efficace. Elle offre le meilleur compromis entre vitesse d'apprentissage et exploitation des connaissances. Cependant, le Q-Learning tabulaire montre ici ses limites face à la complexité de l'environnement : même la meilleure configuration ne parvient pas à une moyenne positive, illustrant la nécessité de passer à des méthodes d'approximation de fonction (Deep RL).
+**Verdict**: **Config 1** is the most effective. It offers the best trade-off between learning speed and exploitation. However, tabular Q-Learning shows its limits against the environment's complexity: even the best configuration fails to reach a positive mean, which shows the need to move to function approximation methods (Deep RL).
 
 ---
 
 ## 4. REINFORCE (Policy Gradient)
 
-REINFORCE est un algorithme de gradient de politique de type Monte-Carlo. Contrairement au Q-Learning, il apprend directement une politique paramétrée par un réseau de neurones.
+REINFORCE is a Monte-Carlo policy gradient algorithm. Unlike Q-Learning, it directly learns a policy parameterized by a neural network.
 
-### Entraînement
-- **Config** : `configs/reinforce.yaml`
-- **Graines (Seeds)** : [0, 1, 2, 3, 4]
-- **Nombre de pas max** : 200 000
+### Training
+- **Config**: `configs/reinforce.yaml`
+- **Seeds**: [0, 1, 2, 3, 4]
+- **Max steps**: 200 000
 
-| Seed | Épisodes | Reward Moyen | Reward Max | Status | Temps |
+| Seed | Episodes | Mean Reward | Max Reward | Status | Time |
 |------|----------|--------------|------------|--------|-------|
-| 0    | 828      | -38.4        | 315.2      | Terminé| ~5min |
-| 1    | 795      | -70.1        | 297.7      | Terminé| ~5min |
-| 2    | 806      | -41.7        | 299.6      | Terminé| ~5min |
-| 3    | 824      | -30.3        | 307.1      | Terminé| ~5min |
-| 4    | 616      | -85.4        | 201.6      | Terminé| ~6min |
+| 0    | 828      | -38.4        | 315.2      | Done   | ~5min |
+| 1    | 795      | -70.1        | 297.7      | Done   | ~5min |
+| 2    | 806      | -41.7        | 299.6      | Done   | ~5min |
+| 3    | 824      | -30.3        | 307.1      | Done   | ~5min |
+| 4    | 616      | -85.4        | 201.6      | Done   | ~6min |
 
-### Évaluation (100 épisodes par seed, soit 500 épisodes au total)
-- **Reward Moyen** : 39.2 ± 11.9
-- **Taux de succès** : 18.2%
-- **Cause de fin** : Mélange de 'solved' et 'crash'.
-- **Max Reward** : 315.2
+### Evaluation (100 episodes per seed, 500 episodes in total)
+- **Mean Reward**: 39.2 ± 11.9
+- **Success rate**: 18.2%
+- **End cause**: Mix of 'solved' and 'crash'.
+- **Max Reward**: 315.2
 
-### Hyperparamètres
-- **Gamma** : 0.99
-- **Learning Rate (LR)** : 0.001
-- **Réseau** : 1 couche cachée de 128 neurones
+### Hyperparameters
+- **Gamma**: 0.99
+- **Learning Rate (LR)**: 0.001
+- **Network**: 1 hidden layer of 128 neurons
 
 ### Conclusion
-REINFORCE montre une nette supériorité sur le Q-Learning en termes de reward moyen (passant de -41.8 à **+39.2**). Bien que le taux de succès soit identique (**18.2%**), l'agent semble avoir une bien meilleure gestion des échecs, évitant des crashs trop violents. L'utilisation d'un réseau de neurones permet de capturer la continuité de l'espace d'observation de manière bien plus efficace que la discrétisation tabulaire.
+REINFORCE clearly beats Q-Learning on mean reward (from -41.8 to **+39.2**). Although the success rate is identical (**18.2%**), the agent appears to handle failures much better, avoiding overly violent crashes. A neural network captures the continuity of the observation space far more effectively than tabular discretization.
 
 ---
 
 ## 5. REINFORCE (Policy Gradient) - Config 2
 
-Cette version utilise un réseau plus large (`hidden=256`) et un taux d'apprentissage plus faible (`lr=0.0005`) pour capturer des relations plus complexes tout en maintenant la stabilité.
+This version uses a wider network (`hidden=256`) and a lower learning rate (`lr=0.0005`) to capture more complex relationships while staying stable.
 
-### Entraînement
-- **Config** : `configs/reinforce_v2.yaml`
-- **Graines (Seeds)** : [0, 1, 2, 3, 4]
-- **Nombre de pas max** : 200 000
+### Training
+- **Config**: `configs/reinforce_v2.yaml`
+- **Seeds**: [0, 1, 2, 3, 4]
+- **Max steps**: 200 000
 
-| Seed | Épisodes | Reward Moyen | Reward Max | Status | Temps |
+| Seed | Episodes | Mean Reward | Max Reward | Status | Time |
 |------|----------|--------------|------------|--------|-------|
-| 0    | 627      | -50.6        | 166.2      | Terminé| ~6min |
-| 1    | 674      | -63.6        | 253.2      | Terminé| ~6min |
-| 2    | 684      | -39.0        | 279.4      | Terminé| ~6min |
-| 3    | 816      | -61.9        | 257.9      | Terminé| ~6min |
-| 4    | 695      | -41.6        | 215.4      | Terminé| ~6min |
+| 0    | 627      | -50.6        | 166.2      | Done   | ~6min |
+| 1    | 674      | -63.6        | 253.2      | Done   | ~6min |
+| 2    | 684      | -39.0        | 279.4      | Done   | ~6min |
+| 3    | 816      | -61.9        | 257.9      | Done   | ~6min |
+| 4    | 695      | -41.6        | 215.4      | Done   | ~6min |
 
-### Évaluation (100 épisodes par seed, soit 500 épisodes au total)
-- **Reward Moyen** : 77.6 ± 8.1
-- **Taux de succès** : 12.0%
-- **Cause de fin** : Très peu de crashs, beaucoup de 'landed' hors zone ou temps limite.
-- **Max Reward** : 279.4
+### Evaluation (100 episodes per seed, 500 episodes in total)
+- **Mean Reward**: 77.6 ± 8.1
+- **Success rate**: 12.0%
+- **End cause**: Very few crashes, many 'landed' outside the zone or time limit.
+- **Max Reward**: 279.4
 
-### Hyperparamètres
-- **Gamma** : 0.99
-- **Learning Rate (LR)** : 0.0005
-- **Réseau** : 1 couche cachée de 256 neurones
+### Hyperparameters
+- **Gamma**: 0.99
+- **Learning Rate (LR)**: 0.0005
+- **Network**: 1 hidden layer of 256 neurons
 
 ### Conclusion
-La Config 2 avec un réseau plus large et un taux d'apprentissage plus faible montre une **stabilité nettement supérieure** (Reward moyen de +77.6). Cependant, le taux de succès brut est plus faible que la Config 1 (12.0% vs 18.2%). Cela suggère que l'agent a appris une politique très prudente qui minimise les risques de crash mais manque encore de la précision nécessaire pour se poser systématiquement dans la zone cible. 
+Config 2, with a wider network and a lower learning rate, is **much more stable** (mean reward of +77.6). However, its raw success rate is lower than Config 1 (12.0% vs 18.2%). This suggests the agent learned a very cautious policy that minimizes crash risk but still lacks the precision to land consistently in the target zone. 
 
-Le passage de REINFORCE (Config 2) marque le premier agent à obtenir une moyenne de reward solide et positive sur cet environnement complexe.
+REINFORCE (Config 2) is the first agent to reach a solid, positive mean reward on this complex environment.
 
-### 5.3. Synthèse Comparative REINFORCE
-| Config | Hidden | LR | Reward Moyen | Taux de Succès | Observation Clé |
+### 5.3. REINFORCE Comparison
+| Config | Hidden | LR | Mean Reward | Success Rate | Key Observation |
 |--------|--------|----|--------------|----------------|-----------------|
-| Config 1| 128    | 0.001 | 39.2        | **18.2%**      | Plus agressif, mais plus instable. |
-| Config 2| 256    | 0.0005| **77.6**      | 12.0%          | Très stable, évite les crashs. |
+| Config 1| 128    | 0.001 | 39.2        | **18.2%**      | More aggressive, but less stable. |
+| Config 2| 256    | 0.0005| **77.6**      | 12.0%          | Very stable, avoids crashes. |
 
-**Leçons pour le DQN :**
-- **Architecture** : Un réseau plus large (256) aide à la stabilité globale, mais le réseau standard (128) semble suffisant pour "trouver" la zone cible.
-- **Vitesse d'apprentissage** : Le DQN étant plus sensible aux oscillations, nous utiliserons un LR de **0.0003** (standard pour Adam/DQN) pour maximiser la stabilité apprise avec la Config 2 de REINFORCE.
-- **Cible** : La stabilité du reward en Config 2 montre qu'une approche plus "douce" (LR bas, gros réseau) est préférable pour ce type d'environnement continu.
+**Lessons for DQN:**
+- **Architecture**: A wider network (256) helps overall stability, but the standard network (128) seems sufficient to "find" the target zone.
+- **Learning speed**: Since DQN is more sensitive to oscillations, we will use an LR of **0.0003** (standard for Adam/DQN) to maximize the stability learned with REINFORCE Config 2.
+- **Target**: The reward stability of Config 2 shows that a "gentler" approach (low LR, large network) is preferable for this kind of continuous environment.
 
 ---
 
 ## 6. DQN (Deep Q-Network)
 
-Le DQN combine le Q-Learning avec des réseaux de neurones profonds. Contrairement à REINFORCE qui est un algorithme de gradient de politique (on-policy), le DQN est un algorithme de valeur (off-policy) utilisant un **Replay Buffer** pour réutiliser les expériences passées et un **Réseau Cible (Target Network)** pour stabiliser l'apprentissage.
+DQN combines Q-Learning with deep neural networks. Unlike REINFORCE, a policy gradient (on-policy) algorithm, DQN is a value-based (off-policy) algorithm that uses a **Replay Buffer** to reuse past experiences and a **Target Network** to stabilize learning.
 
-**Pourquoi passer au DQN ?**
-- **Efficacité** : Le Replay Buffer permet d'apprendre beaucoup plus de choses avec moins d'épisodes en rejouant les transitions importantes.
-- **Stabilité** : Les leçons de REINFORCE (Config 2) nous ont montré que la stabilité est la clé du succès sur LunarLander. Le Target Network du DQN est spécifiquement conçu pour éviter les divergences que nous avons vues en Q-Learning Tabulaire.
+**Why move to DQN?**
+- **Efficiency**: The Replay Buffer learns much more from fewer episodes by replaying important transitions.
+- **Stability**: The REINFORCE lessons (Config 2) showed that stability is the key to success on LunarLander. DQN's Target Network is specifically designed to avoid the divergence we saw with tabular Q-Learning.
 
-### Stratégie de mise à jour
-Nous allons comparer deux méthodes de stabilisation du réseau cible, tout en conservant les leçons apprises sur le réseau de neurones (LR faible, architecture robuste).
+### Update strategy
+We compare two methods for stabilizing the target network, while keeping the lessons learned about the neural network (low LR, robust architecture).
 
 #### 6.1. DQN Hard Update
-Le réseau cible est synchronisé avec le réseau principal par paliers (`target_update_freq=500`).
+The target network is synchronized with the main network in steps (`target_update_freq=500`).
 
-- **Config** : `configs/dqn_hard.yaml`
-- **Graines (Seeds)** : [0, 1, 2, 3, 4]
-- **Nombre de pas max** : 500 000
+- **Config**: `configs/dqn_hard.yaml`
+- **Seeds**: [0, 1, 2, 3, 4]
+- **Max steps**: 500 000
 
-| Seed | Épisodes | Reward Moyen | Reward Max | Status | Temps |
+| Seed | Episodes | Mean Reward | Max Reward | Status | Time |
 |------|----------|--------------|------------|--------|-------|
-| 0    | 432      | 12.0         | 316.0      | Résolu | ~12min|
-| 1    | 450      | -19.2        | 292.4      | Résolu | ~12min|
-| 2    | 441      | 26.8         | 290.6      | Résolu | ~12min|
-| 3    | 534      | 37.0         | 309.6      | Résolu | ~15min|
-| 4    | 453      | 18.9         | 315.9      | Résolu | ~12min|
+| 0    | 432      | 12.0         | 316.0      | Solved | ~12min|
+| 1    | 450      | -19.2        | 292.4      | Solved | ~12min|
+| 2    | 441      | 26.8         | 290.6      | Solved | ~12min|
+| 3    | 534      | 37.0         | 309.6      | Solved | ~15min|
+| 4    | 453      | 18.9         | 315.9      | Solved | ~12min|
 
 ### 6.2. DQN Soft Update (Polyak)
-Le réseau cible est mis à jour progressivement à chaque pas en utilisant un facteur $\tau$ (`tau=0.02`).
+The target network is updated gradually at each step using a factor $\tau$ (`tau=0.02`).
 
-- **Config** : `configs/dqn_soft.yaml`
-- **Graines (Seeds)** : [0, 1, 2, 3, 4]
-- **Nombre de pas max** : 500 000
+- **Config**: `configs/dqn_soft.yaml`
+- **Seeds**: [0, 1, 2, 3, 4]
+- **Max steps**: 500 000
 
-| Seed | Épisodes | Reward Moyen | Reward Max | Status | Temps |
+| Seed | Episodes | Mean Reward | Max Reward | Status | Time |
 |------|----------|--------------|------------|--------|-------|
-| 0    | 393      | 14.0         | 304.9      | Résolu | ~12min|
-| 1    | 405      | 29.8         | 291.7      | Résolu | ~12min|
-| 2    | 470      | 31.2         | 296.8      | Résolu | ~15min|
-| 3    | 504      | 12.6         | 292.0      | Résolu | ~15min|
-| 4    | 560      | 63.0         | 298.1      | Résolu | ~15min|
+| 0    | 393      | 14.0         | 304.9      | Solved | ~12min|
+| 1    | 405      | 29.8         | 291.7      | Solved | ~12min|
+| 2    | 470      | 31.2         | 296.8      | Solved | ~15min|
+| 3    | 504      | 12.6         | 292.0      | Solved | ~15min|
+| 4    | 560      | 63.0         | 298.1      | Solved | ~15min|
 
-### Évaluation DQN Hard (100 épisodes par seed)
-- **Reward Moyen** : **218.5 ± 5.4**
-- **Taux de succès** : **75.6%**
-- **Cause de fin** : Atterrissages maîtrisés dans la zone cible.
-- **Max Reward** : 316.0
+### DQN Hard Evaluation (100 episodes per seed)
+- **Mean Reward**: **218.5 ± 5.4**
+- **Success rate**: **75.6%**
+- **End cause**: Controlled landings in the target zone.
+- **Max Reward**: 316.0
 
-**Observation DQN Hard :**
-Le DQN Hard Update marque une rupture technologique dans ce benchmark. En utilisant un Replay Buffer et un Target Network, il parvient à **résoudre** l'environnement sur toutes les seeds là où REINFORCE plafonnait. L'agent a acquis une précision de pilotage que les méthodes on-policy n'ont pas réussi à stabiliser dans le temps imparti.
+**DQN Hard observation:**
+DQN Hard Update is a breakthrough in this benchmark. Using a Replay Buffer and a Target Network, it **solves** the environment on every seed where REINFORCE plateaued. The agent acquired a piloting precision that the on-policy methods could not stabilize within the allotted time.
 
-### Évaluation DQN Soft (100 épisodes par seed)
-- **Reward Moyen** : **210.0 ± 5.4**
-- **Taux de succès** : **70.6%**
-- **Cause de fin** : Atterrissages maîtrisés, mais parfois trop de prudence (timeouts).
-- **Max Reward** : 304.9
+### DQN Soft Evaluation (100 episodes per seed)
+- **Mean Reward**: **210.0 ± 5.4**
+- **Success rate**: **70.6%**
+- **End cause**: Controlled landings, but sometimes too cautious (timeouts).
+- **Max Reward**: 304.9
 
-### Conclusion DQN
-La famille DQN a prouvé sa supériorité absolue sur ce benchmark. 
-- Le **DQN Hard Update** est le plus performant (**+218.5 reward**, **75.6% succès**), montrant qu'une mise à jour périodique et stable du réseau cible suffit à maîtriser parfaitement le pilotage du Lander.
-- Le **DQN Soft Update** est tout aussi capable mais a montré une convergence légèrement plus laborieuse sur certaines seeds et un comportement plus hésitant en vol.
+### DQN Conclusion
+The DQN family proved clearly superior on this benchmark. 
+- **DQN Hard Update** performs best (**+218.5 reward**, **75.6% success**), showing that a periodic, stable target network update is enough to fully master piloting the Lander.
+- **DQN Soft Update** is just as capable but converged with slightly more difficulty on some seeds and showed more hesitant flight behavior.
 
-L'utilisation d'un **Replay Buffer** a été l'élément transformateur, permettant au DQN d'apprendre environ 2 fois plus vite que REINFORCE avec une précision finale 4 fois supérieure.
+The **Replay Buffer** was the transformative element, letting DQN learn about 2 times faster than REINFORCE with 4 times higher final precision.
 
 ---
 
-## 7. Synthèse Finale du Benchmark
+## 7. Final Benchmark Summary
 
-| Agent | Type | Espace d'Action | Reward Moyen | Taux de Succès | Verdict |
+| Agent | Type | Action Space | Mean Reward | Success Rate | Verdict |
 |-------|------|-----------------|--------------|----------------|---------|
-| Random| Baseline | Discret | -184.6 | 0.0% | Inefficace |
-| Heuristic| Baseline | Discret | -219.8 | 0.0% | Très Faible |
-| Q-Learning| Tabulaire | Discrétisé | -41.8 | 18.2% | Limité |
-| REINFORCE (C2)| PG | Discret | +77.6 | 12.0% | Stable mais imprécis |
-| **DQN Hard** | **Deep Q** | **Discret** | **+218.5** | **75.6%** | **Vainqueur** |
-| DQN Soft | Deep Q | Discret | +210.0 | 70.6% | Solide mais lent |
+| Random| Baseline | Discrete | -184.6 | 0.0% | Ineffective |
+| Heuristic| Baseline | Discrete | -219.8 | 0.0% | Very Weak |
+| Q-Learning| Tabular | Discretized | -41.8 | 18.2% | Limited |
+| REINFORCE (C2)| PG | Discrete | +77.6 | 12.0% | Stable but imprecise |
+| **DQN Hard** | **Deep Q** | **Discrete** | **+218.5** | **75.6%** | **Winner** |
+| DQN Soft | Deep Q | Discrete | +210.0 | 70.6% | Solid but slow |
 
 ---
 
-## 8. Étude d'Ablation : Stratégies de Target Network Update
+## 8. Ablation Study: Target Network Update Strategies
 
-Une partie clé de notre benchmark a consisté à comparer deux méthodes de mise à jour du réseau cible pour stabiliser le DQN.
+A key part of our benchmark compared two target network update methods for stabilizing DQN.
 
-| Paramètre | Hard Target Update | Soft Target Update (Polyak) |
+| Parameter | Hard Target Update | Soft Target Update (Polyak) |
 |-----------|--------------------|-----------------------------|
-| **Mécanisme** | Copie intégrale tous les 500 pas | Glissement continu ($\tau=0.02$) |
-| **Reward Moyen** | **+218.5** | +210.0 |
-| **Taux de Succès**| **75.6%** | 70.6% |
-| **Convergence** | Rapide (~450 épisodes) | Plus lente (~500+ épisodes) |
-| **Comportement** | Décisif, atterrissages francs | Prudent, tendance au vol stationnaire |
+| **Mechanism** | Full copy every 500 steps | Continuous blending ($\tau=0.02$) |
+| **Mean Reward** | **+218.5** | +210.0 |
+| **Success Rate**| **75.6%** | 70.6% |
+| **Convergence** | Fast (~450 episodes) | Slower (~500+ episodes) |
+| **Behavior** | Decisive, clean landings | Cautious, tends to hover |
 
-### Analyse des résultats
-L'ablation montre que pour le LunarLander, le **Hard Update** est supérieur. La mise à jour par paliers semble agir comme une "secousse" bénéfique pour la politique, empêchant l'agent de s'enfermer dans une prudence excessive (les nombreux timeouts observés en Soft Update). Le Soft Update, bien que théoriquement plus stable, a ici ralenti la convergence vers une solution optimale de landing.
+### Results analysis
+The ablation shows that for LunarLander, the **Hard Update** is superior. The step-wise update seems to act as a beneficial "jolt" for the policy, keeping the agent from locking into excessive caution (the many timeouts observed with Soft Update). The Soft Update, although theoretically more stable, slowed convergence toward an optimal landing solution here.
 
-**Conclusion Générale** : Le projet démontre l'importance capitale de l'approximation de fonction par réseaux de neurones pour les environnements à états continus. Le passage du Q-Learning Tabulaire au DQN a permis de transformer un agent incapable de se poser en un pilote expert dépassant même les performances de l'approche heuristique codée à la main.
+**Overall Conclusion**: The project demonstrates how essential neural network function approximation is for continuous-state environments. Moving from tabular Q-Learning to DQN turned an agent unable to land into an expert pilot that even outperforms the hand-coded heuristic approach.

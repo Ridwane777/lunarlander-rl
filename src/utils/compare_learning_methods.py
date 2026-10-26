@@ -131,8 +131,8 @@ def plot_rewards_with_trend(output_dir, dataset, window=20):
         rews = data["rewards"]
         ax.plot(eps, rews, alpha=0.18, linewidth=0.9, label=f"{name} (brut)")
         ax.plot(eps, moving_average(rews, window), linewidth=2.2, label=f"{name} (MA{window})")
-    ax.axhline(200, color="#444", linestyle="--", linewidth=1.0, label="Seuil de résolution (200)")
-    ax.set_title("Reward par épisode + tendance")
+    ax.axhline(200, color="#444", linestyle="--", linewidth=1.0, label="Solved threshold (200)")
+    ax.set_title("Reward per episode + trend")
     ax.set_xlabel("Episode")
     ax.set_ylabel("Reward total")
     ax.grid(True, alpha=0.3)
@@ -150,10 +150,10 @@ def plot_mean100(output_dir, dataset):
         if valid:
             xs, ys = zip(*valid)
             ax.plot(xs, ys, linewidth=2.2, label=name)
-    ax.axhline(200, color="#444", linestyle="--", linewidth=1.0, label="Seuil de résolution (200)")
-    ax.set_title("Moyenne glissante sur 100 épisodes")
+    ax.axhline(200, color="#444", linestyle="--", linewidth=1.0, label="Solved threshold (200)")
+    ax.set_title("Rolling mean over 100 episodes")
     ax.set_xlabel("Episode")
-    ax.set_ylabel("Mean reward (100 derniers épisodes)")
+    ax.set_ylabel("Mean reward (last 100 episodes)")
     ax.grid(True, alpha=0.3)
     ax.legend()
     fig.tight_layout()
@@ -183,7 +183,7 @@ def plot_simple_method_comparison(output_dir, dataset):
     ax.set_xticks(x)
     ax.set_xticklabels(methods)
     ax.set_ylabel("Valeur")
-    ax.set_title("Comparaison simple des methodes")
+    ax.set_title("Simple method comparison")
     ax.grid(True, axis="y", alpha=0.25)
     ax.legend()
 
@@ -223,14 +223,14 @@ def plot_termination_causes(output_dir, dataset):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Compare plusieurs methodes d'apprentissage a partir des logs CSV.")
+    parser = argparse.ArgumentParser(description="Compare several learning methods from CSV logs.")
     parser.add_argument(
         "--method",
         action="append",
         required=False,
-        help='Format: "Nom=logs/fichier.csv". Peut etre repete 3+ fois.',
+        help='Format: "Name=logs/file.csv". Can be repeated 3+ times.',
     )
-    parser.add_argument("--output-dir", default="plots/method_comparison", help="Dossier de sortie des figures.")
+    parser.add_argument("--output-dir", default="plots/method_comparison", help="Output directory for figures.")
     args = parser.parse_args()
 
     default_methods = [
@@ -264,8 +264,8 @@ def main():
             f"{i}. {row['method']:<14} | mean_last_100={row['mean_last_100']:.2f} | "
             f"solved_episode={row['solved_episode']} | landed_rate={100*row['landed_rate']:.1f}%"
         )
-    print(f"\nFigures sauvegardees dans: {args.output_dir}")
-    print(f"Tableau de metriques sauvegarde dans: {summary_path}")
+    print(f"\nFigures saved to: {args.output_dir}")
+    print(f"Metrics table saved to: {summary_path}")
 
 
 if __name__ == "__main__":

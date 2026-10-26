@@ -2,25 +2,25 @@ import csv
 import os
 
 class EpisodeLogger:
-    """Utilitaire pour enregistrer les métriques d'apprentissage et d'évaluation dans des fichiers CSV.
-    Permet un suivi précis de la convergence et des causes de terminaison.
+    """Writes training and evaluation metrics to CSV files.
+    Tracks convergence and termination causes.
     """
     def __init__(self, log_path):
         os.makedirs(os.path.dirname(log_path), exist_ok=True)
         self.file = open(log_path, "w", newline="")
         self.writer = csv.writer(self.file)
-        # En-têtes pour l'analyse ultérieure
+        # Headers for later analysis
         self.writer.writerow(
             ["episode", "total_reward", "length", "termination_cause", "epsilon", "loss_mean"]
         )
 
     def log(self, episode, reward, length, terminated, truncated, info,
             epsilon=None, loss=None):
-        """Enregistre les données d'un épisode terminé."""
+        """Record data for a finished episode."""
         if truncated:
             cause = "timeout"
         elif terminated:
-            # On distingue le crash de l'atterrissage réussi par le signe de la récompense
+            # Tell a crash from a successful landing by the reward sign
             cause = "crash" if reward < 0 else "landed"
         else:
             cause = "Unknown"
@@ -32,5 +32,5 @@ class EpisodeLogger:
         self.file.flush()
 
     def close(self):
-        """Ferme proprement le fichier de log."""
+        """Close the log file cleanly."""
         self.file.close()

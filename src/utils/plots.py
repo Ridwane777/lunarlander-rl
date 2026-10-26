@@ -7,7 +7,7 @@ import pandas as pd
 import numpy as np
 
 def _rolling(data, w=100):
-    """Calcule la moyenne mobile sur une fenêtre de taille w."""
+    """Compute the moving average over a window of size w."""
     out = []
     for i in range(len(data)):
         s = max(0, i - w + 1)
@@ -16,7 +16,7 @@ def _rolling(data, w=100):
 
 
 def _plot_seed(result, plot_dir):
-    """Génère le graphique de récompense pour une seed individuelle."""
+    """Plot the reward curve for a single seed."""
     r = result["returns"]
     if len(r) < 2:
         return
@@ -29,9 +29,9 @@ def _plot_seed(result, plot_dir):
     ax.axhline(200, color="green", linestyle="--", linewidth=1.5, label="Objectif 200")
     if result["solved_at"] is not None:
         ax.axvline(result["solved_at"], color="orange", linestyle=":",
-                   linewidth=1.5, label=f"Résolu ep.{result['solved_at']}")
+                   linewidth=1.5, label=f"Solved ep.{result['solved_at']}")
     ax.set_title(f"{result['algo']} | seed={result['seed']}")
-    ax.set_xlabel("Épisode"); ax.set_ylabel("Récompense totale")
+    ax.set_xlabel("Episode"); ax.set_ylabel("Total reward")
     ax.legend(fontsize=8); ax.grid(True, alpha=0.3)
     plt.tight_layout()
     path = os.path.join(plot_dir, f"seed{result['seed']}_reward.png")
@@ -40,7 +40,7 @@ def _plot_seed(result, plot_dir):
 
 
 def _plot_aggregate(results, plot_dir, algo):
-    """Génère le graphique agrégé sur toutes les seeds avec intervalle de confiance à 95%."""
+    """Plot the aggregate over all seeds with a 95% confidence interval."""
     all_r = [r["returns"] for r in results]
     n     = len(all_r)
     min_l = min(len(r) for r in all_r)
@@ -61,16 +61,16 @@ def _plot_aggregate(results, plot_dir, algo):
     eps  = list(range(min_l))
 
     fig, ax = plt.subplots(figsize=(12, 5))
-    # Zone d'ombre représentant l'IC 95%
+    # Shaded area for the 95% CI
     ax.fill_between(eps, [m-c for m,c in zip(means,ci95)],
                          [m+c for m,c in zip(means,ci95)],
                     alpha=0.2, color="steelblue", label="IC 95% (Robustesse)")
     ax.plot(eps, means, alpha=0.3, color="steelblue", linewidth=1)
     ax.plot(eps, roll, color="steelblue", linewidth=2.5,
-            label=f"Moyenne agrégée ({n} seeds)")
+            label=f"Aggregated mean ({n} seeds)")
     ax.axhline(200, color="green", linestyle="--", linewidth=1.5, label="Objectif 200")
-    ax.set_title(f"{algo} — Benchmark Agrégé {n} seeds")
-    ax.set_xlabel("Épisode"); ax.set_ylabel("Récompense totale")
+    ax.set_title(f"{algo} — Aggregated benchmark, {n} seeds")
+    ax.set_xlabel("Episode"); ax.set_ylabel("Total reward")
     ax.legend(fontsize=9); ax.grid(True, alpha=0.3)
     plt.tight_layout()
     path = os.path.join(plot_dir, "aggregate.png")
@@ -78,7 +78,7 @@ def _plot_aggregate(results, plot_dir, algo):
     print(f"  → {path}")
 
 def _plot_training_stats(algo, log_paths, plot_dir):
-    """Génère des graphiques riches (distribution, succès, causes) pour l'entraînement."""
+    """Generate detailed training plots (distribution, success, causes)."""
     all_data = []
     seeds = []
     for path in log_paths:
@@ -92,26 +92,26 @@ def _plot_training_stats(algo, log_paths, plot_dir):
     if not all_data:
         return
 
-    # 1. Distribution des Rewards (Boxplot)
+    # 1. Reward distribution (boxplot)
     fig, ax = plt.subplots(figsize=(10, 5))
     rewards = [df['total_reward'].tolist() for df in all_data]
     ax.boxplot(rewards, tick_labels=seeds, patch_artist=True,
                medianprops=dict(color="black", linewidth=2))
     ax.axhline(200, color="green", linestyle="--", alpha=0.6)
-    ax.set_title(f"Distribution des Rewards d'Apprentissage — {algo}")
+    ax.set_title(f"Training reward distribution — {algo}")
     ax.set_ylabel("Total Reward")
     plt.tight_layout()
     fig.savefig(os.path.join(plot_dir, "training_reward_dist.png"), dpi=110)
     plt.close(fig)
 
-    # 2. Taux de Succès (Episodes >= 200)
+    # 2. Success rate (episodes >= 200)
     fig, ax = plt.subplots(figsize=(10, 4))
     success_rates = [(df['total_reward'] >= 200).mean() * 100 for df in all_data]
     bars = ax.bar(seeds, success_rates, color="skyblue", alpha=0.8, edgecolor="navy")
     for bar, rate in zip(bars, success_rates):
         ax.text(bar.get_x() + bar.get_width()/2, rate + 0.5, f"{rate:.1f}%", ha='center', fontsize=9)
-    ax.set_title(f"Taux de Succès pendant l'Apprentissage — {algo}")
-    ax.set_ylabel("% épisodes ≥ 200")
+    ax.set_title(f"Success rate during training — {algo}")
+    ax.set_ylabel("% episodes ≥ 200")
     ax.set_ylim(0, max(success_rates + [10]) * 1.2)
     plt.tight_layout()
     fig.savefig(os.path.join(plot_dir, "training_success_rate.png"), dpi=110)
@@ -125,11 +125,11 @@ def _plot_training_stats(algo, log_paths, plot_dir):
     for cause, color in cause_colors.items():
         vals = []
         for df in all_data:
-            # On cherche dans terminated, truncated, etc. ou la colonne 'termination_cause' si elle existe
+            # Look at terminated, truncated, etc., or the 'termination_cause' column if present
             if 'termination_cause' in df.columns:
                 count = (df['termination_cause'] == cause).sum()
             else:
-                # Fallback sur les booléens
+                # Fall back to the booleans
                 if cause == "landed": count = df['terminated'].sum()
                 elif cause == "crash": count = (df['terminated'] == False).sum() # Simpliste
                 else: count = 0
@@ -138,11 +138,11 @@ def _plot_training_stats(algo, log_paths, plot_dir):
         ax.bar(seeds, vals, bottom=bottoms, label=cause, color=color, alpha=0.8)
         bottoms += np.array(vals)
 
-    ax.set_title(f"Répartition des Terminaisons — {algo}")
-    ax.set_ylabel("% épisodes")
+    ax.set_title(f"Termination breakdown — {algo}")
+    ax.set_ylabel("% episodes")
     ax.legend(loc='upper right', fontsize=8)
     plt.tight_layout()
     fig.savefig(os.path.join(plot_dir, "training_terminations.png"), dpi=110)
     plt.close(fig)
     
-    print(f"  → Graphiques riches d'entraînement générés dans {plot_dir}")
+    print(f"  → Detailed training plots written to {plot_dir}")

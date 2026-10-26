@@ -7,11 +7,10 @@ from src.utils.logger import EpisodeLogger
 from src.utils.core import set_seed, _result
 
 def train_baseline(cfg, seed, log_path):
-    """Boucle d'exécution pour les agents de référence (Random et Heuristic).
+    """Run loop for the baseline agents (Random and Heuristic).
     
-    Ces agents ne possèdent pas de phase d'apprentissage. On mesure simplement 
-    leurs performances sur le nombre de pas définis pour servir de base de 
-    comparaison (baselines) aux algorithmes de RL.
+    These agents do not learn. We only measure their performance over the
+    configured number of steps, as a reference point for the RL algorithms.
     """
     algo = cfg["algo"]
     os.makedirs(f"videos/train/{algo}_seed{seed}", exist_ok=True)
@@ -28,7 +27,7 @@ def train_baseline(cfg, seed, log_path):
     t0 = time.time()
 
     for _ in range(cfg["max_steps"]):
-        # Sélection d'action selon des règles fixes ou aléatoires
+        # Action selection from fixed rules or at random
         action = agent.select_action(obs)
         next_obs, reward, terminated, truncated, info = env.step(action)
         done = terminated or truncated

@@ -1,33 +1,33 @@
-# Optimisations du Deep Q-Network (DQN) sur LunarLander-v3
+# Deep Q-Network (DQN) Optimizations on LunarLander-v3
 
-## 1. Fréquence de mise à jour (`update_every`)
-**L'approche initiale** : Le réseau subit une passe de rétropropagation (backpropagation) à **chaque itération** de l'environnement (à chaque appel de `env.step()`).
-**L'approche optimisée** : Le réseau n'est mis à jour que **tous les 4 steps**.
+## 1. Update frequency (`update_every`)
+**Initial approach**: The network runs a backpropagation pass at **every iteration** of the environment (every `env.step()` call).
+**Optimized approach**: The network is only updated **every 4 steps**.
 
-**Pourquoi c'est mieux :**
-- C'est une technique standard issue du papier original de DeepMind.
-- Cela permet d'accumuler de nouvelles expériences dans le Replay Buffer entre chaque mise à jour, ce qui brise la corrélation temporelle des échantillons.
-- Empêche l'agent de "sur-apprendre" (overfitting) sur la dynamique très récente de son vol.
-- Divise par 4 le coût computationnel de l'entraînement.
+**Why it is better:**
+- It is a standard technique from DeepMind's original paper.
+- New experiences accumulate in the Replay Buffer between updates, which breaks the temporal correlation of samples.
+- It keeps the agent from overfitting on the very recent dynamics of its flight.
+- It cuts training compute cost by 4.
 
-## 2. Décroissance du taux d'exploration (`epsilon_decay`)
-**L'approche initiale** : L'exploration décroît avec une multiplication de `0.995` à **chaque step**. Résultat : l'exploration (`epsilon`) chute de 1.0 à 0.01 en moins de 1000 itérations (soit 1 ou 2 épisodes), ce qui ne laisse pas le temps à l'agent de découvrir l'environnement.
-**L'approche optimisée** : Une décroissance de `0.996` **par épisode** (ou `0.9995` par step) permet à l'agent d'explorer activement pendant une cinquantaine d'épisodes avant de figer sa stratégie. 
+## 2. Exploration rate decay (`epsilon_decay`)
+**Initial approach**: Exploration decays by multiplying by `0.995` at **every step**. As a result, exploration (`epsilon`) drops from 1.0 to 0.01 in under 1000 iterations (1 or 2 episodes), leaving the agent no time to discover the environment.
+**Optimized approach**: A decay of `0.996` **per episode** (or `0.9995` per step) lets the agent explore actively for about fifty episodes before settling its strategy. 
 
-## 3. Écrêtage des gradients (Gradient Clipping)
-**L'approche initiale** : Clipping fixé à `10.0`.
-**L'approche optimisée** : Clipping agressif fixé à `1.0`.
+## 3. Gradient Clipping
+**Initial approach**: Clipping set to `10.0`.
+**Optimized approach**: Aggressive clipping set to `1.0`.
 
-**Pourquoi c'est mieux :** 
-Sur LunarLander, un crash inattendu ou l'allumage prolongé d'un propulseur peut générer des erreurs de Différence Temporelle (TD Error) énormes dans le calcul de la *Loss*. Un clipping à `1.0` garantit que les poids du réseau ne font pas de sauts brutaux qui viendraient "casser" l'apprentissage précédent.
+**Why it is better:** 
+On LunarLander, an unexpected crash or a prolonged thruster burn can produce huge Temporal Difference (TD) errors in the *Loss*. Clipping at `1.0` ensures the network weights do not make abrupt jumps that would "break" earlier learning.
 
-## 4. Stratégie de mise à jour du Target Network
-L'agent optimisé utilise une **Hard Update** (copie complète des poids) tous les 1000 cycles d'apprentissage, offrant une cible parfaitement immuable pendant de longs instants.
-Notre modèle emploie une **Soft Update** (méthode de Polyak, `tau=0.005`) à chaque mise à jour. Bien que la *Soft Update* soit plus moderne (utilisée en algorithmes continus comme SAC), la *Hard Update* s'avère souvent un peu plus stable pour un DQN classique standard.
+## 4. Target Network update strategy
+The optimized agent uses a **Hard Update** (full weight copy) every 1000 learning cycles, giving a perfectly fixed target for long stretches.
+Our model uses a **Soft Update** (Polyak method, `tau=0.005`) at every update. Although the *Soft Update* is more modern (used in continuous algorithms such as SAC), the *Hard Update* often proves slightly more stable for a standard vanilla DQN.
 
 ---
 
 ## Conclusion
-Les deux optimisations immédiates ayant le plus d'impact pour résoudre LunarLander-v3 plus rapidement sont :
-1. Intégrer un `update_every = 4` pour désaturer la mise à jour des poids.
-2. Baisser le `grad_clip` à `1.0` pour plus de stabilité face aux récompenses négatives sévères (-100 en cas de crash).
+The two immediate optimizations with the most impact for solving LunarLander-v3 faster are:
+1. Adding `update_every = 4` to ease the weight-update load.
+2. Lowering `grad_clip` to `1.0` for more stability against severe negative rewards (-100 on a crash).

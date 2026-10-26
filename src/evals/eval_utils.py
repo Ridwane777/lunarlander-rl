@@ -37,7 +37,7 @@ def print_verdict(metrics):
     
     if metrics:
         best_algo, best_m = max(metrics.items(), key=lambda x: x[1]["mean_reward"])
-        print(f"\n MEILLEUR AGENT (Évaluation) : {best_algo.upper()}")
+        print(f"\n BEST AGENT (Evaluation): {best_algo.upper()}")
         print(f"   mean_reward  = {best_m['mean_reward']:.1f} ± {best_m['ci95']:.1f} (IC 95%)")
         print(f"   success_rate = {best_m['success_rate']:.1f}%")
     print()

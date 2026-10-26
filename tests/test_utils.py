@@ -12,13 +12,13 @@ def test_replay_buffer():
     device = torch.device("cpu")
     buffer = ReplayBuffer(capacity=capacity, device=device)
     
-    # Remplir au delà de la capacité  
+    # Fill beyond capacity  
     for i in range(capacity + 5):
         buffer.push(np.random.rand(8), 1, 1.0, np.random.rand(8), False)
     
     assert len(buffer) == capacity
     
-    # Tester le sample  
+    # Test sampling  
     states, actions, rewards, next_states, dones = buffer.sample(batch_size=5)
     assert states.shape == (5, 8)
     assert actions.shape == (5,)

@@ -14,7 +14,7 @@ from src.agents.random_agent import RandomAgent
 from src.agents.heuristic_agent import HeuristicAgent
 
 def create_agent(algo, env, hp):
-    """Factory function pour instancier l'agent correspondant à l'algorithme choisi."""
+    """Factory that builds the agent for the chosen algorithm."""
     if algo.startswith("dqn"):
         return DQNAgent(env.observation_space.shape[0], env.action_space.n, hp)
     elif algo.startswith("reinforce"):
@@ -29,10 +29,10 @@ def create_agent(algo, env, hp):
         raise ValueError(f"Unknown algo: {algo}")
 
 def evaluate_model(model_path, config_path, algo, seed, n_episodes=100):
-    """Exécute une évaluation déterministe d'un modèle entraîné.
+    """Run a deterministic evaluation of a trained model.
     
-    Cette fonction garantit que chaque agent est testé sur les mêmes 100 épisodes 
-    (seeds fixées de 10000 à 10100) pour une comparaison équitable (benchmark).
+    Every agent is tested on the same 100 episodes
+    (fixed seeds 10000 to 10100) for a fair benchmark comparison.
     """
     cfg = load_config(config_path)
     hp = cfg.get("hyperparameters", {})
@@ -45,7 +45,7 @@ def evaluate_model(model_path, config_path, algo, seed, n_episodes=100):
 
     agent = create_agent(algo, env, hp)
     
-    # Chargement des poids du modèle sauvegardé
+    # Load the saved model weights
     if not load_model(agent, algo, model_path):
         return None
 
@@ -53,18 +53,18 @@ def evaluate_model(model_path, config_path, algo, seed, n_episodes=100):
     log_path = f"logs/eval/{algo}_seed{seed}.csv"
     logger = EpisodeLogger(log_path)
     
-    print(f"\n[EVAL] Test de {algo} (seed {seed}) sur {n_episodes} épisodes...")
+    print(f"\n[EVAL] Testing {algo} (seed {seed}) over {n_episodes} episodes...")
     
     t0 = time.time()
     for ep in range(n_episodes):
-        # Utilisation de seeds déterministes décalées pour l'évaluation
+        # Use offset deterministic seeds for evaluation
         obs, _ = env.reset(seed=10000 + ep)
         ep_return = 0.0
         ep_len = 0
         done = False
         
         while not done:
-            # En évaluation, on utilise la politique apprise sans exploration (greedy)
+            # During evaluation, use the learned policy without exploration (greedy)
             action = agent.select_action(obs)
             obs, reward, terminated, truncated, info = env.step(action)
             ep_return += reward
@@ -76,8 +76,8 @@ def evaluate_model(model_path, config_path, algo, seed, n_episodes=100):
     logger.close()
     env.close()
     
-    # Concatenation des vidéos pour n'avoir qu'un seul fichier final par run
+    # Concatenate videos into a single file per run
     concat_episode_videos(f"videos/evals/{algo}_seed{seed}")
     
-    print(f"[EVAL] Terminé en {time.time()-t0:.1f}s. Logs sauvegardés dans {log_path}")
+    print(f"[EVAL] Done in {time.time()-t0:.1f}s. Logs saved to {log_path}")
     return log_path
