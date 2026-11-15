@@ -3,4 +3,7 @@ rl_env/
 .venv
 __pycache__
 .pytest_cachemodels/*.pth
+# The DQN weights are small (76 KB each) and shipped so the agent can be tried without training.
+!models/dqn_hard_seed*.pth
+!models/dqn_soft_seed*.pth
 *.pyc
