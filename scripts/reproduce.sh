@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# reproduce.sh — LunarLander-v3
+# reproduce.sh - LunarLander-v3
 # =============================================================================
 # Regenerates ALL project results with a single command:
 #   1. Checks the Python environment
@@ -51,7 +51,7 @@ cd "$SCRIPT_DIR"
 
 echo ""
 echo -e "${BOLD}============================================================${NC}"
-echo -e "${BOLD}  LunarLander RL — Reproduce Script${NC}"
+echo -e "${BOLD}  LunarLander RL - Reproduce Script${NC}"
 echo -e "${BOLD}============================================================${NC}"
 echo ""
 
@@ -111,7 +111,7 @@ if [[ "$EVAL_ONLY" == false ]]; then
     done
   fi
 
-  success "Training finished — logs in logs/train/"
+  success "Training finished - logs in logs/train/"
 fi
 
 # ── 5. benchmark & graphes ───────────────────────────────────────────────────
@@ -120,9 +120,9 @@ echo -e "${BOLD}--- Benchmark & graphes ---${NC}"
 
 if ls models/*.pth &>/dev/null; then
   python3 eval.py
-  success "Benchmark finished — plots in plots/benchmark/"
+  success "Benchmark finished - plots in plots/benchmark/"
 else
-  warn "No .pth model in models/ — run training first."
+  warn "No .pth model in models/ - run training first."
 fi
 
 # ── 6. summary ────────────────────────────────────────────────────────────────
@@ -130,11 +130,11 @@ echo ""
 echo -e "${BOLD}============================================================${NC}"
 echo -e "${GREEN}${BOLD}  Reproduction completed successfully.${NC}"
 echo -e "${BOLD}  Results:${NC}"
-echo -e "    logs/train/    — CSV d'apprentissage"
-echo -e "    logs/eval/     — deterministic evaluation CSVs"
-echo -e "    models/        — model weights (.pth)"
-echo -e "    videos/train/  — training videos"
-echo -e "    videos/evals/  — test videos"
-echo -e "    plots/         — training curves and comparative benchmark"
+echo -e "    logs/train/    - CSV d'apprentissage"
+echo -e "    logs/eval/     - deterministic evaluation CSVs"
+echo -e "    models/        - model weights (.pth)"
+echo -e "    videos/train/  - training videos"
+echo -e "    videos/evals/  - test videos"
+echo -e "    plots/         - training curves and comparative benchmark"
 echo -e "${BOLD}============================================================${NC}"
 echo ""

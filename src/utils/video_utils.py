@@ -1,5 +1,5 @@
 """
-video_utils.py — Video utilities
+video_utils.py - Video utilities
 ==============================
 Provides concat_episode_videos() to merge the per-episode videos
 produced by gym.wrappers.RecordVideo into one video per run.
@@ -25,7 +25,7 @@ def concat_episode_videos(video_folder: str, output_name: str = "full_run.mp4",
     try:
         from moviepy import VideoFileClip, concatenate_videoclips
     except ImportError:
-        print("[WARN] moviepy unavailable — skipping video concatenation.")
+        print("[WARN] moviepy unavailable - skipping video concatenation.")
         return None
 
     # List and sort episodes in natural order

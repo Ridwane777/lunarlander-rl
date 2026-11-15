@@ -69,7 +69,7 @@ def _plot_aggregate(results, plot_dir, algo):
     ax.plot(eps, roll, color="steelblue", linewidth=2.5,
             label=f"Aggregated mean ({n} seeds)")
     ax.axhline(200, color="green", linestyle="--", linewidth=1.5, label="Objectif 200")
-    ax.set_title(f"{algo} — Aggregated benchmark, {n} seeds")
+    ax.set_title(f"{algo} - Aggregated benchmark, {n} seeds")
     ax.set_xlabel("Episode"); ax.set_ylabel("Total reward")
     ax.legend(fontsize=9); ax.grid(True, alpha=0.3)
     plt.tight_layout()
@@ -98,7 +98,7 @@ def _plot_training_stats(algo, log_paths, plot_dir):
     ax.boxplot(rewards, tick_labels=seeds, patch_artist=True,
                medianprops=dict(color="black", linewidth=2))
     ax.axhline(200, color="green", linestyle="--", alpha=0.6)
-    ax.set_title(f"Training reward distribution — {algo}")
+    ax.set_title(f"Training reward distribution - {algo}")
     ax.set_ylabel("Total Reward")
     plt.tight_layout()
     fig.savefig(os.path.join(plot_dir, "training_reward_dist.png"), dpi=110)
@@ -110,7 +110,7 @@ def _plot_training_stats(algo, log_paths, plot_dir):
     bars = ax.bar(seeds, success_rates, color="skyblue", alpha=0.8, edgecolor="navy")
     for bar, rate in zip(bars, success_rates):
         ax.text(bar.get_x() + bar.get_width()/2, rate + 0.5, f"{rate:.1f}%", ha='center', fontsize=9)
-    ax.set_title(f"Success rate during training — {algo}")
+    ax.set_title(f"Success rate during training - {algo}")
     ax.set_ylabel("% episodes ≥ 200")
     ax.set_ylim(0, max(success_rates + [10]) * 1.2)
     plt.tight_layout()
@@ -138,7 +138,7 @@ def _plot_training_stats(algo, log_paths, plot_dir):
         ax.bar(seeds, vals, bottom=bottoms, label=cause, color=color, alpha=0.8)
         bottoms += np.array(vals)
 
-    ax.set_title(f"Termination breakdown — {algo}")
+    ax.set_title(f"Termination breakdown - {algo}")
     ax.set_ylabel("% episodes")
     ax.legend(loc='upper right', fontsize=8)
     plt.tight_layout()

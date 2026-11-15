@@ -119,7 +119,7 @@ def plot_success_rate(metrics, out_dir):
     for bar, rate in zip(bars, rates):
         ax.text(bar.get_x() + bar.get_width()/2, rate + 0.5,
                 f"{rate:.1f}%", ha="center", va="bottom", fontsize=9)
-    ax.set_title("Success rate — episodes with reward ≥ 200", fontsize=13)
+    ax.set_title("Success rate - episodes with reward ≥ 200", fontsize=13)
     ax.set_ylabel("% episodes ≥ 200"); ax.set_ylim(0, max(rates or [10]) * 1.2 + 5)
     ax.grid(axis="y", alpha=0.3)
     plt.xticks(rotation=15)

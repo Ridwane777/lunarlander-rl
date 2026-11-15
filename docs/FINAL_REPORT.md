@@ -1,4 +1,4 @@
-# Project Report — LunarLander-v3 
+# Project Report - LunarLander-v3 
 **Author: Ridwane777**
 
 ## 1. Introduction and Problem Definition

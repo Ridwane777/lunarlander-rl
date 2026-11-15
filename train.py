@@ -1,5 +1,5 @@
 """
-train.py — LunarLander-v3
+train.py - LunarLander-v3
 =================================================
 Trains every agent defined in configs/ over several seeds.
 
@@ -10,9 +10,9 @@ Usage:
     python train.py --list                                   # list configs
 
 Outputs:
-    logs/<algo>_seed<N>.csv    — per-episode CSV
-    plots/<algo>/              — reward curves + multi-seed aggregate
-    models/<algo>_seed<N>.pth  — trained model
+    logs/<algo>_seed<N>.csv    - per-episode CSV
+    plots/<algo>/              - reward curves + multi-seed aggregate
+    models/<algo>_seed<N>.pth  - trained model
 """
 
 import argparse
