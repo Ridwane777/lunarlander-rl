@@ -4,10 +4,13 @@ Five reinforcement learning approaches compared on Gymnasium's **LunarLander-v3*
 lunar module on its pad, from 8 continuous observations and 4 discrete engine actions. The
 task counts as solved at a mean score of 200 over 100 episodes.
 
-A Double DQN with a hard target update solves it: **218.5 ± 5.4** over 5 training seeds,
-and the best seed scores **249** with 96 landings out of 100.
+A Double DQN with a hard target update solves it from the reward alone: **218.5 ± 5.4** over
+5 training seeds, and the best seed scores **249** with 96 landings out of 100. A hand-tuned
+controller that knows the physics still does better (255.4), and is kept as the reference.
 
-[Watch the best agent land (MP4)](videos/evals/dqn_hard_seed4/full_run.mp4)
+![Three landings by the best DQN agent (python play.py)](docs/media/landing.gif)
+
+Full evaluation run of the best agent: [MP4](videos/evals/dqn_hard_seed4/full_run.mp4).
 
 ![Mean reward with 95% confidence interval per method](plots/benchmark/01_mean_reward_ci95.png)
 
@@ -43,21 +46,22 @@ method, mean reward ± 95% confidence interval:
 
 | Method | Mean score | Success rate | Verdict |
 |---|---|---|---|
+| Heuristic (PD controller) | 255.4 | 95.0% | best score, no learning |
 | **DQN, hard target update** | **218.5 ± 5.4** | **75.6%** | solved |
 | DQN, soft target update | 210.0 ± 5.4 | 70.6% | solved |
 | REINFORCE (tuned) | 77.6 ± 12.5 | 12.0% | learns, unstable |
 | Q-Learning | -41.8 ± 16.1 | 18.2% | limited by the discretization |
 | Random | -184.6 ± 9.6 | 0.0% | reference zero |
-| Heuristic | to be re-measured | | see below |
 
-DQN wins thanks to its replay buffer and its ability to generalize over continuous states,
+Among the learned agents, DQN wins thanks to its replay buffer and its ability to generalize over continuous states,
 where tabular Q-Learning must discretize them. The hard target update is slightly better
 and as stable as the soft one.
 
-**Heuristic baseline.** The first hand-written controller only reacted to large tilts and
-fast falls and scored -219.8 ± 14.9, worse than random actions, so it was not a meaningful
-reference. It has been replaced by a proportional-derivative controller adapted from the
-one shipped with Gymnasium (MIT license); its score has not been measured yet.
+**Heuristic baseline.** A proportional-derivative controller adapted from the one shipped
+with Gymnasium (MIT license). It is deterministic, so it is measured once on the same 100
+episodes (no confidence interval). It beats every learned agent, which is expected: it encodes
+the dynamics by hand, while DQN learns them from the reward. A first, naive controller scored
+-219.8, worse than random, and was replaced.
 
 Per-method details, hyperparameters and curves: [docs/benchmark.md](docs/benchmark.md);
 design choices: [docs/optimization.md](docs/optimization.md).
