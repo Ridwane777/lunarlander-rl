@@ -1,116 +1,119 @@
 # LunarLander RL
 
-Five reinforcement learning approaches compared on Gymnasium's **LunarLander-v3**: land a
-lunar module on its pad, from 8 continuous observations and 4 discrete engine actions. The
-task counts as solved at a mean score of 200 over 100 episodes.
+**Can a program learn to land on the Moon from nothing but trial and error?**
 
-A Double DQN with a hard target update solves it from the reward alone: **218.5 ± 5.4** over
-5 training seeds, and the best seed scores **249** with 96 landings out of 100. A hand-tuned
-controller that knows the physics still does better (255.4), and is kept as the reference.
+This project trains agents on Gymnasium's
+[LunarLander-v3](https://gymnasium.farama.org/environments/box2d/lunar_lander/) with no
+knowledge of physics: they only see 8 numbers (position, speed, tilt, leg contacts), choose
+one of 4 engine commands, and receive a score. Three reinforcement learning algorithms of
+increasing power are compared, from a lookup table to a deep Q-network, against two pilots
+that need no training at all: random actions and a hand-written controller.
 
-![Three landings by the best DQN agent (python play.py)](docs/media/landing.gif)
+![Three landings by the trained DQN agent](docs/media/landing.gif)
 
-Full evaluation run of the best agent: [MP4](videos/evals/dqn_hard_seed4/full_run.mp4).
-
-![Mean reward with 95% confidence interval per method](plots/benchmark/01_mean_reward_ci95.png)
-
-## Try it (no training needed)
-
-The trained DQN weights are in `models/` (76 KB each, 5 seeds × 2 variants).
-
-```bash
-git clone https://github.com/Ridwane777/lunarlander-rl.git
-cd lunarlander-rl
-python3 -m venv venv && source venv/bin/activate
-pip install -r requirements.txt          # Box2D may need swig: sudo apt install swig
-
-python play.py                           # opens a window: 3 landings by the best agent
-python play.py --record landing.gif      # or save them as a GIF / MP4
-python play.py --model models/dqn_soft_seed0.pth --episodes 5 --seed 42
-```
-
-## Agents
-
-| Agent | Category | Mode | File |
-|---|---|---|---|
-| Random | baseline | n/a | `src/agents/random_agent.py` |
-| Heuristic | baseline (hand-written controller) | n/a | `src/agents/heuristic_agent.py` |
-| Q-Learning | tabular, discretized states | off-policy | `src/agents/q_learning.py` |
-| REINFORCE | policy gradient | on-policy | `src/agents/reinforce_agent.py` |
-| Double DQN | value-based, replay buffer, target network | off-policy | `src/agents/dqn_agent.py` |
+*The trained DQN agent (`python play.py`). Nobody told it what gravity or thrust is.*
 
 ## Results
 
-100 deterministic evaluation episodes per seed (seeds 10000 to 10099), 5 training seeds per
-method, mean reward ± 95% confidence interval:
+Same 100 evaluation episodes for every pilot, 5 training runs per learning method (best
+configuration of each shown). An episode succeeds at 200 points; the task is solved at a
+mean of 200.
 
-| Method | Mean score | Success rate | Verdict |
+| Pilot | How it gets its skill | Mean score ± 95% CI | Success |
 |---|---|---|---|
-| Heuristic (PD controller) | 255.4 | 95.0% | best score, no learning |
-| **DQN, hard target update** | **218.5 ± 5.4** | **75.6%** | solved |
-| DQN, soft target update | 210.0 ± 5.4 | 70.6% | solved |
-| REINFORCE (tuned) | 77.6 ± 12.5 | 12.0% | learns, unstable |
-| Q-Learning | -41.8 ± 16.1 | 18.2% | limited by the discretization |
-| Random | -184.6 ± 9.6 | 0.0% | reference zero |
+| Random actions | none | -193.9 ± 10.3 | 0% |
+| Q-Learning | learns a table of action values | -41.8 ± 16.1 | 18% |
+| REINFORCE | learns a policy network | 77.6 ± 8.1 | 12% |
+| **DQN** (Double DQN, hard target update) | learns a Q-network from replayed experience | **218.5 ± 5.4** | **76%** |
+| Rule-based controller | written by hand from the physics | 255.4 ± 14.6 | 95% |
 
-Among the learned agents, DQN wins thanks to its replay buffer and its ability to generalize over continuous states,
-where tabular Q-Learning must discretize them. The hard target update is slightly better
-and as stable as the soft one.
+**DQN learns to land reliably from the reward alone**: every training run solved the task,
+and the best model lands 96 times out of 100. The hand-written controller still scores
+higher, because a human who understands the dynamics wrote it; DQN gets close without that
+understanding, which is what the project sets out to show. Details, per-seed scores and
+ablations: [results](docs/experiments/results.md).
 
-**Heuristic baseline.** A proportional-derivative controller adapted from the one shipped
-with Gymnasium (MIT license). It is deterministic, so it is measured once on the same 100
-episodes (no confidence interval). It beats every learned agent, which is expected: it encodes
-the dynamics by hand, while DQN learns them from the reward. A first, naive controller scored
--219.8, worse than random, and was replaced.
-
-Per-method details, hyperparameters and curves: [docs/benchmark.md](docs/benchmark.md);
-design choices: [docs/optimization.md](docs/optimization.md).
-
-## Usage
+## Try it
 
 ```bash
-python train.py --config configs/dqn_hard.yaml   # train one agent (all seeds of its config)
-python train.py                                  # train every agent
-python train.py --plot-only                      # only redraw the training curves
+git clone https://github.com/Ridwane777/lunarlander-rl.git && cd lunarlander-rl
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt     # Box2D needs swig: sudo apt install swig (or pip install swig)
 
-python eval.py                                   # evaluate every model in models/, 100 episodes each
-python eval.py --models models/dqn_hard_seed*.pth
-python eval.py --plot-only                       # only redraw the benchmark plots
-
-bash scripts/reproduce.sh                        # everything, from scratch
-pytest tests/                                    # unit tests
+python play.py                      # watch the trained DQN agent (weights included, no training)
+python play.py --agent heuristic    # same episodes, flown by the hand-written controller
+python play.py --record landing.gif # save a GIF or MP4 instead of opening a window
 ```
 
-Only the DQN weights are versioned; the Q-Learning tables (up to 8 MB per seed) and the
-other models are regenerated by `train.py`.
+Train and evaluate:
+
+```bash
+python train.py --config configs/dqn_hard.yaml   # train one method (5 seeds)
+python train.py                                  # train every learning method
+python eval.py                                   # benchmark: shipped models + baselines
+bash scripts/reproduce.sh                        # everything from scratch (hours on a CPU)
+pytest tests/                                    # unit tests + shipped models still land
+```
+
+## How it works, in short
+
+The agent and the environment interact in a loop: observe the state, act, receive a reward.
+The agent's goal is to maximise the **return**, the discounted sum of future rewards.
+
+- **Q-Learning** (Watkins, 1989) estimates how good each action is in each state with the
+  Bellman equation, in a table. The continuous state must be cut into bins, and the table
+  cannot generalise between them: it plateaus.
+- **REINFORCE** (Williams, 1992) learns the policy directly with a neural network, pushing
+  up the probability of actions that preceded high returns. It generalises, but its
+  gradient estimate is very noisy.
+- **DQN** (Mnih et al., 2015) approximates action values with a neural network and makes it
+  stable with an **experience replay** buffer, a **target network** and the **Double DQN**
+  target (van Hasselt et al., 2016). It reuses every experience many times and solves the task.
+- The **rule-based controller** is a proportional-derivative controller adapted from the
+  one shipped with Gymnasium: it leans the lander toward the pad and brakes to a target
+  height. No learning; usable as a pilot on its own.
+
+The full explanations, with equations and the reasoning behind each design choice, are in
+the documentation:
+
+| | |
+|---|---|
+| [1. The problem](docs/theory/01-the-problem.md) | observations, actions, reward, what makes it hard |
+| [2. RL foundations](docs/theory/02-rl-foundations.md) | MDP, value functions, Bellman, TD vs Monte Carlo, exploration |
+| [3. Q-Learning](docs/theory/03-q-learning.md) · [4. REINFORCE](docs/theory/04-reinforce.md) · [5. DQN](docs/theory/05-dqn.md) | each algorithm: idea, equations, implementation, results, limits |
+| [6. Rule-based control](docs/theory/06-rule-based-control.md) | PD control, the controller, hand-written versus learned |
+| [Methodology](docs/experiments/methodology.md) · [Results](docs/experiments/results.md) · [Next steps](docs/experiments/limitations-and-next-steps.md) | protocol, caveats, benchmark, known weaknesses |
+| [References](docs/references.md) | papers and where each one is used |
 
 ## Project structure
 
 ```
 .
-├── train.py            training entry point
-├── eval.py             evaluation and benchmark entry point
-├── play.py             watch or record the trained agent
-├── configs/            hyperparameters per algorithm (YAML)
+├── play.py                watch or record a pilot (DQN or controller), no training needed
+├── train.py               train the learning agents from a YAML config
+├── eval.py                evaluate models and baselines on the same 100 episodes, draw the benchmark
+├── configs/               hyperparameters of each learning configuration (YAML)
 ├── src/
-│   ├── agents/         the five agents
-│   ├── trains/         training loops
-│   ├── evals/          deterministic evaluation, metrics, plots
-│   └── utils/          replay buffer, logger, statistics, videos
-├── models/             shipped DQN weights (.pth)
-├── tests/              unit tests (pytest)
-├── logs/               training and evaluation CSV logs
-├── plots/              learning curves and benchmark charts
-├── videos/             training and evaluation videos
-├── docs/               benchmark, design choices, report
-└── scripts/            reproduce.sh, run_eval.sh
+│   ├── agents/            learning agents: q_learning, reinforce_agent, dqn_agent
+│   ├── baselines/         pilots without training: random_agent, heuristic (rule-based controller)
+│   ├── trains/            one training loop per algorithm family
+│   ├── evals/             evaluation, metrics, benchmark plots
+│   └── utils/             replay buffer, logger, model I/O, plots, videos
+├── models/                trained DQN weights (76 KB each, 5 seeds × 2 variants)
+├── logs/                  per-episode CSV logs of every training and evaluation run
+├── plots/                 learning curves per configuration, benchmark charts
+├── videos/                training and evaluation videos (MP4)
+├── docs/                  theory, experiments, references
+├── scripts/reproduce.sh   full retraining and evaluation
+└── tests/                 pytest suite, run by CI on every push
 ```
 
 ## Author
 
-[Ridwane777](https://github.com/Ridwane777): architecture, agents (Q-Learning, REINFORCE,
-DQN), training and evaluation pipeline, CI and benchmark.
+[Ridwane777](https://github.com/Ridwane777): architecture, agents, training and evaluation
+pipeline, benchmark, CI.
 
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE). The rule-based controller is adapted from Gymnasium's LunarLander
+heuristic, also under the MIT license.
