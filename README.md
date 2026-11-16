@@ -9,6 +9,11 @@ one of 4 engine commands, and receive a score. Three reinforcement learning algo
 increasing power are compared, from a lookup table to a deep Q-network, against two pilots
 that need no training at all: random actions and a hand-written controller.
 
+> **Status: in progress.** This first part covers the discrete version of the task (4 on/off
+> engine commands). The continuous version, `LunarLanderContinuous-v3`, where the agent sets
+> engine throttles, will be explored next with continuous-control algorithms
+> ([next steps](docs/experiments/limitations-and-next-steps.md#algorithmic-next-steps)).
+
 ![Three landings by the trained DQN agent](docs/media/landing.gif)
 
 *The trained DQN agent (`python play.py`). Nobody told it what gravity or thrust is.*

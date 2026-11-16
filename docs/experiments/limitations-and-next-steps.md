@@ -33,8 +33,11 @@ Ordered by expected gain for this project:
    phase. A few lines in `QNetwork`.
 4. **Rainbow-style combination** (Hessel et al., 2018): n-step returns, distributional
    values, noisy networks. Mostly relevant beyond this task's difficulty.
-5. **Continuous control.** `LunarLanderContinuous-v3` gives throttle control; SAC
-   (Haarnoja et al., 2018) would allow smoother, cheaper landings than on/off engines.
+5. **Continuous control (planned, next phase of the project).** `LunarLanderContinuous-v3`
+   gives throttle control: the action becomes two real numbers instead of one of four
+   commands, so DQN's max over actions no longer applies. Actor-critic methods built for
+   continuous actions, such as SAC (Haarnoja et al., 2018), should allow smoother, cheaper
+   landings than on/off engines. This training will be added to the same benchmark.
 
 ## What the rule-based controller suggests
 
