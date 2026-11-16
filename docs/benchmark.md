@@ -35,32 +35,30 @@ The random agent performs extremely poorly, with a mean reward of **-184.6**. Th
 
 ## 2. Heuristic Agent (Baseline)
 
-The heuristic agent uses a set of hand-coded rules (based on position, angle and velocity) to try to stabilize the lander.
+A hand-written proportional-derivative controller (`src/agents/heuristic_agent.py`), adapted
+from the heuristic shipped with Gymnasium's LunarLander (MIT license). It steers two targets:
+an angle that leans toward the pad, and a hover height that grows with the horizontal
+distance to the pad. No learning, no hyperparameters.
 
-### Training
-- **Config**: `configs/heuristic.yaml`
-- **Seeds**: [0, 1, 2, 3, 4]
-- **Max steps**: 50 000
+### Evaluation (same 100 episodes as every agent, seeds 10000 to 10099)
+- **Mean Reward**: 255.4
+- **Success rate** (score >= 200): 95.0%
+- **Max Reward**: 314.0
 
-| Seed | Episodes | Mean Reward | Max Reward | Status | Time |
-|------|----------|--------------|------------|--------|-------|
-| 0    | 716      | -226.0       | 38.2       | Done   | ~60s  |
-| 1    | 718      | -219.1       | 55.5       | Done   | ~60s  |
-| 2    | 714      | -215.7       | 19.1       | Done   | ~60s  |
-| 3    | 706      | -223.2       | 32.7       | Done   | ~60s  |
-| 4    | 709      | -226.4       | 7.8        | Done   | ~60s  |
+The controller is deterministic, so the 5 "seeds" of the benchmark produce identical runs: the
+summary table shows ± 6.5 because it treats them as 500 independent episodes, but only 100 are
+distinct. Measured on 2026-11-16, Python 3.14, Gymnasium 1.4.0.
 
-### Evaluation (100 episodes per seed, 500 episodes in total)
-- **Mean Reward**: -219.8 ± 14.9
-- **Success rate**: 0.0%
-- **End cause**: Exclusively 'crash'.
-- **Max Reward**: 55.5
-
-### Hyperparameters
-None (fixed rules).
+### History
+The first version only reacted to large tilts and fast falls. It scored -219.8 ± 14.9 with
+0% success, worse than random actions (-184.6), so it was not a meaningful reference and was
+replaced by the controller above.
 
 ### Conclusion
-Counter-intuitively, the heuristic agent scores **lower** than the random agent in this setup (-219.8 vs -184.6). Although it tries to stabilize the craft, its coded rules seem to cause more systematic or more heavily penalized crashes. This shows that a naive strategy, even an intentional one, can be less effective than no strategy at all in some complex environments. Reinforcement learning is needed to find a balance that the manual rules do not reach here.
+A well-tuned controller that knows the physics beats every learned agent of this benchmark
+(255.4 vs 218.5 for the best DQN configuration). The DQN reaches its score without any
+knowledge of the dynamics, from the reward alone; that is what the comparison measures, not
+which method lands best on this particular, fully known task.
 
 ---
 
@@ -287,10 +285,10 @@ The **Replay Buffer** was the transformative element, letting DQN learn about 2 
 | Agent | Type | Action Space | Mean Reward | Success Rate | Verdict |
 |-------|------|-----------------|--------------|----------------|---------|
 | Random| Baseline | Discrete | -184.6 | 0.0% | Ineffective |
-| Heuristic| Baseline | Discrete | -219.8 | 0.0% | Very Weak |
+| Heuristic| Baseline (PD controller) | Discrete | +255.4 | 95.0% | Best score, no learning |
 | Q-Learning| Tabular | Discretized | -41.8 | 18.2% | Limited |
 | REINFORCE (C2)| PG | Discrete | +77.6 | 12.0% | Stable but imprecise |
-| **DQN Hard** | **Deep Q** | **Discrete** | **+218.5** | **75.6%** | **Winner** |
+| **DQN Hard** | **Deep Q** | **Discrete** | **+218.5** | **75.6%** | **Best learned agent** |
 | DQN Soft | Deep Q | Discrete | +210.0 | 70.6% | Solid but slow |
 
 ---
@@ -310,4 +308,4 @@ A key part of our benchmark compared two target network update methods for stabi
 ### Results analysis
 The ablation shows that for LunarLander, the **Hard Update** is superior. The step-wise update seems to act as a beneficial "jolt" for the policy, keeping the agent from locking into excessive caution (the many timeouts observed with Soft Update). The Soft Update, although theoretically more stable, slowed convergence toward an optimal landing solution here.
 
-**Overall Conclusion**: The project demonstrates how essential neural network function approximation is for continuous-state environments. Moving from tabular Q-Learning to DQN turned an agent unable to land into an expert pilot that even outperforms the hand-coded heuristic approach.
+**Overall Conclusion**: The project demonstrates how essential neural network function approximation is for continuous-state environments. Moving from tabular Q-Learning to DQN turned an agent unable to land into a pilot that solves the task, although a hand-tuned controller using knowledge of the physics still scores higher (255.4).

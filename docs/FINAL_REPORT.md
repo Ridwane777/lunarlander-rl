@@ -64,7 +64,7 @@ The results below are computed over 100 final evaluation episodes:
 | **DQN (Soft Update)** | 210.0 | ± 5.4 | 70.6% |
 | REINFORCE | 77.6 | ± 12.5 | 12.0% |
 | Q-Learning (Tabular) | -41.8 | ± 16.1 | 18.2% |
-| Heuristic (Baseline) | -219.8 | ± 14.9 | 0.0% |
+| Heuristic (PD controller, deterministic) | 255.4 | n/a | 95.0% |
 
 ### 3.2 Convergence Curve Analysis
 (Note: see the figures in `plots/benchmark/` for visual detail). 
