@@ -23,7 +23,7 @@ class DQNAgent:
     def __init__(self, obs_dim, n_actions, config):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.n_actions = n_actions
-        self.gamma = config["gamma"]  # Facteur de remise (discount factor)
+        self.gamma = config["gamma"]  # discount factor
         self.batch_size = config["batch_size"]
         self.target_update_freq = config["target_update_freq"]
         self.update_every = config.get("update_every", 1)
@@ -73,7 +73,7 @@ class DQNAgent:
         # Randomly sample a batch of transitions
         states_t, actions_t, rewards_t, next_states_t, dones_t = self.buffer.sample(self.batch_size)
 
-        # Calcul de Q(s,a) actuel
+        # Current estimate Q(s,a)
         q_values = self.q_net(states_t).gather(1, actions_t.unsqueeze(1)).squeeze(1)
 
         # Double DQN: decouple selection and evaluation to avoid overestimation

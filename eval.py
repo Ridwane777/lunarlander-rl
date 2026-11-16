@@ -1,13 +1,14 @@
 """
 eval.py - LunarLander-v3
 ================================================
-Evaluates trained .pth models in a test environment
-and builds a comparative benchmark from those evaluations.
+Evaluates the trained models and the two baselines that need no training
+(random actions, rule-based controller) on the same 100 episodes, then builds
+the comparative benchmark.
 
 Usage:
-    python eval.py                      # all models available in models/
-    python eval.py --models models/dqn_soft_seed*.pth
-    python eval.py --out plots/benchmark
+    python eval.py                      # every model in models/ + baselines
+    python eval.py --models models/dqn_soft_seed*.pth --no-baselines
+    python eval.py --plot-only          # only redraw plots from logs/eval/
 """
 
 import argparse
@@ -19,7 +20,7 @@ import re
 ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ROOT)
 
-from src.evals.eval_core import evaluate_model
+from src.evals.eval_core import evaluate_model, evaluate_heuristic, evaluate_random
 from src.evals.eval_metrics import algo_from_path, load_all, compute_metrics
 from src.evals.eval_plots import (
     plot_mean_ci,
@@ -40,6 +41,8 @@ def main():
         help="Number of test episodes per model.")
     parser.add_argument("--out", default="plots/benchmark",
         help="Output directory for plots (default: plots/benchmark)")
+    parser.add_argument("--no-baselines", action="store_true",
+        help="Skip the random and heuristic baselines.")
     parser.add_argument("--plot-only", action="store_true",
         help="Skip evaluation; only regenerate plots from logs/eval/")
     args = parser.parse_args()
@@ -84,6 +87,11 @@ def main():
             log_path = evaluate_model(path, config_path, algo, seed, n_episodes=args.n_episodes)
             if log_path:
                 eval_logs_paths.append(log_path)
+
+        if not args.no_baselines:
+            eval_logs_paths.append(evaluate_heuristic(args.n_episodes))
+            for seed in range(5):
+                eval_logs_paths.append(evaluate_random(seed, args.n_episodes))
 
     if not eval_logs_paths:
         print("No evaluation succeeded.")

@@ -1,10 +1,13 @@
 """
-play.py - watch or record the trained agent land, no training needed
-====================================================================
-Loads shipped DQN weights (models/*.pth) and plays greedy episodes.
+play.py - watch or record a lander pilot, no training needed
+============================================================
+Two pilots are available out of the box:
+  dqn        the trained DQN agent, loaded from the shipped weights (models/*.pth)
+  heuristic  the rule-based controller (src/baselines/heuristic.py), no weights at all
 
 Usage:
-    python play.py                                  # opens a window, 3 landings
+    python play.py                                  # opens a window, 3 landings by the DQN
+    python play.py --agent heuristic                # same episodes, flown by the controller
     python play.py --episodes 5 --seed 42
     python play.py --record landing.gif             # saves a GIF (or .mp4) instead
     python play.py --model models/dqn_soft_seed0.pth
@@ -21,6 +24,7 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, ROOT)
 
 from src.agents.dqn_agent import DQNAgent
+from src.baselines.heuristic import HeuristicAgent
 from src.utils.core import load_config
 from src.utils.model_utils import load_model
 
@@ -37,7 +41,8 @@ def save_frames(frames, path, fps=30):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Watch or record the trained DQN agent.")
+    parser = argparse.ArgumentParser(description="Watch or record a lander pilot.")
+    parser.add_argument("--agent", choices=["dqn", "heuristic"], default="dqn")
     parser.add_argument("--model", default=DEFAULT_MODEL, help="DQN weights (.pth)")
     parser.add_argument("--config", default=os.path.join(ROOT, "configs", "dqn_hard.yaml"))
     parser.add_argument("--episodes", type=int, default=3)
@@ -47,10 +52,13 @@ def main():
 
     cfg = load_config(args.config)
     env = gym.make(cfg["env"], render_mode="rgb_array" if args.record else "human")
-    agent = DQNAgent(env.observation_space.shape[0], env.action_space.n, cfg["hyperparameters"])
-    algo = "dqn_soft" if "soft" in os.path.basename(args.model) else "dqn_hard"
-    if not load_model(agent, algo, args.model):
-        sys.exit(1)
+    if args.agent == "heuristic":
+        agent = HeuristicAgent()
+    else:
+        agent = DQNAgent(env.observation_space.shape[0], env.action_space.n, cfg["hyperparameters"])
+        algo = "dqn_soft" if "soft" in os.path.basename(args.model) else "dqn_hard"
+        if not load_model(agent, algo, args.model):
+            sys.exit(1)
 
     frames, scores = [], []
     for ep in range(args.episodes):

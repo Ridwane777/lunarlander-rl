@@ -55,7 +55,7 @@ def _plot_aggregate(results, plot_dir, algo):
         var = sum((x-mu)**2 for x in col) / max(n-1, 1)
         stds.append(math.sqrt(var))
     
-    # Calcul de l'IC 95% : 1.96 * (std / sqrt(n))
+    # 95% CI: 1.96 * std / sqrt(n)
     ci95 = [1.96*s/math.sqrt(n) for s in stds]
     roll = _rolling(means)
     eps  = list(range(min_l))

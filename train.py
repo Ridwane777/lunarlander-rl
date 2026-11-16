@@ -1,7 +1,8 @@
 """
 train.py - LunarLander-v3
 =================================================
-Trains every agent defined in configs/ over several seeds.
+Trains every learning agent defined in configs/ over several seeds.
+The baselines (random, heuristic) need no training: see eval.py and play.py.
 
 Usage:
     python train.py                                          # all agents
@@ -31,7 +32,6 @@ from src.utils.video_utils import concat_episode_videos
 from src.trains.train_dqn import train_dqn
 from src.trains.train_reinforce import train_reinforce
 from src.trains.train_q_learning import train_q_learning
-from src.trains.train_baseline import train_baseline
 
 TRAINERS = {
     "dqn":        train_dqn,
@@ -41,8 +41,6 @@ TRAINERS = {
     "reinforce_v2":  train_reinforce,
     "q_learning":    train_q_learning,
     "q_learning_v2": train_q_learning,
-    "random":        train_baseline,
-    "heuristic":     train_baseline,
 }
 
 

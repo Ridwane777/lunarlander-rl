@@ -21,9 +21,7 @@ def save_model(agent, algo, seed, filepath=None):
         torch.save(dict(agent.q_table), filepath)
         print(f"  → Q-Learning table saved to {filepath}")
     else:
-        # random or heuristic: save a dummy file to allow eval.py to find it
-        torch.save({"type": algo, "status": "baseline"}, filepath)
-        print(f"  → Baseline {algo.upper()} 'saved' to {filepath}")
+        raise ValueError(f"Nothing to save for algo '{algo}'")
 
 def load_model(agent, algo, filepath):
     if not os.path.exists(filepath):
@@ -51,9 +49,7 @@ def load_model(agent, algo, filepath):
             agent.q_table[k] = v
         agent.epsilon = 0.0 # Greedy mode
         print(f"  → Q-Learning table loaded from {filepath}")
-    
     else:
-        # random or heuristic
-        print(f"  → Baseline {algo.upper()} ready (no weights to load)")
-    
+        raise ValueError(f"No model format for algo '{algo}'")
+
     return True

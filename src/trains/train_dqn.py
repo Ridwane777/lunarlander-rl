@@ -35,7 +35,7 @@ def train_dqn(cfg, seed, log_path):
         next_obs, reward, terminated, truncated, info = env.step(action)
         done = terminated or truncated
 
-        # 2. Apprentissage (Store + Update)
+        # 2. Learn (store + update)
         agent.store(obs, action, reward, next_obs, float(done))
         loss = agent.update()
         if loss is not None:

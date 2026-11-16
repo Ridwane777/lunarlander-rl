@@ -8,7 +8,7 @@ targets drive the discrete engines:
 - hover: the further from the pad horizontally, the higher to hover.
 
 The previous version only reacted to large tilts and fast falls; it scored worse
-than random actions (-220 vs -185), which made it a meaningless baseline.
+than random actions (-220 vs -194), which made it a meaningless baseline.
 """
 
 import numpy as np

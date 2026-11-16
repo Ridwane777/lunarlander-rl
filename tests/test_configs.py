@@ -16,6 +16,4 @@ def test_load_all_configs():
             for field in mandatory_fields:
                 assert field in config, f"Required field '{field}' missing in {cf}"
             
-            # Check that hyperparameters exist (except for simple baselines)  
-            if config["algo"] not in ["heuristic", "random"]:
-                assert len(config["hyperparameters"]) > 0, f"No hyperparameters defined in {cf}"
+            assert len(config["hyperparameters"]) > 0, f"No hyperparameters defined in {cf}"

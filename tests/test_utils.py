@@ -31,11 +31,11 @@ def test_model_utils_dqn():
     
     path = "tests/test_dqn_save.pth"
     
-    # Sauvegarde  
+    # Save
     save_model(mock_agent, "dqn_test", 99, filepath=path)
     assert os.path.exists(path)
     
-    # Chargement
+    # Load
     new_agent = MagicMock()
     new_agent.q_net = nn.Sequential(nn.Linear(8, 4))
     new_agent.target_net = nn.Sequential(nn.Linear(8, 4))
@@ -43,7 +43,7 @@ def test_model_utils_dqn():
     success = load_model(new_agent, "dqn_test", path)
     assert success
     
-    # Nettoyage
+    # Clean up
     if os.path.exists(path):
         os.remove(path)
 

@@ -2,6 +2,8 @@ import os
 import csv
 import math
 
+BASELINES = ("random", "heuristic")   # no training: reference points, not competitors
+
 def save_summary_csv(metrics, out_dir):
     path = os.path.join(out_dir, "benchmark_summary.csv")
     fieldnames = ["algo", "n_seeds", "n_episodes", "mean_reward", "ci95",
@@ -35,9 +37,10 @@ def print_verdict(metrics):
 
     print("="*80)
     
-    if metrics:
-        best_algo, best_m = max(metrics.items(), key=lambda x: x[1]["mean_reward"])
-        print(f"\n BEST AGENT (Evaluation): {best_algo.upper()}")
+    learned = {a: m for a, m in metrics.items() if a not in BASELINES}
+    if learned:
+        best_algo, best_m = max(learned.items(), key=lambda x: x[1]["mean_reward"])
+        print(f"\n BEST LEARNED AGENT: {best_algo.upper()}")
         print(f"   mean_reward  = {best_m['mean_reward']:.1f} ± {best_m['ci95']:.1f} (IC 95%)")
         print(f"   success_rate = {best_m['success_rate']:.1f}%")
     print()

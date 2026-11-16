@@ -4,8 +4,8 @@ from unittest.mock import MagicMock
 from src.agents.q_learning import QLearningAgent
 from src.agents.reinforce_agent import ReinforceAgent
 from src.agents.dqn_agent import DQNAgent
-from src.agents.random_agent import RandomAgent
-from src.agents.heuristic_agent import HeuristicAgent
+from src.baselines.random_agent import RandomAgent
+from src.baselines.heuristic import HeuristicAgent
 
 @pytest.fixture
 def dummy_config():

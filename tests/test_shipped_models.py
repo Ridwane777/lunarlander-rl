@@ -8,7 +8,7 @@ import gymnasium as gym
 import numpy as np
 import pytest
 
-from src.agents.heuristic_agent import HeuristicAgent
+from src.baselines.heuristic import HeuristicAgent
 from src.evals.eval_core import create_agent
 from src.utils.core import load_config
 from src.utils.model_utils import load_model

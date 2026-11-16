@@ -8,8 +8,8 @@ class QLearningAgent:
     """
     def __init__(self, n_actions, config):
         self.n_actions = n_actions
-        self.gamma = config["gamma"]  # Facteur de remise
-        self.lr = config["lr"]        # Taux d'apprentissage
+        self.gamma = config["gamma"]  # discount factor
+        self.lr = config["lr"]        # learning rate
 
         # Epsilon-greedy parameters
         self.epsilon = config["epsilon_start"]

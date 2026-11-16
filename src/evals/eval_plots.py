@@ -5,21 +5,29 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 COLORS = {
-    "dqn_soft":   "#2196F3",
-    "dqn_hard":   "#03A9F4",
-    "reinforce":  "#FF9800",
-    "q_learning": "#9C27B0",
-    "random":     "#9E9E9E",
-    "heuristic":  "#795548",
+    "q_learning":    "#9C27B0",
+    "q_learning_v2": "#BA68C8",
+    "reinforce":     "#FF9800",
+    "reinforce_v2":  "#FFB74D",
+    "dqn_soft":      "#64B5F6",
+    "dqn_hard":      "#1E88E5",
+    "random":        "#9E9E9E",
+    "heuristic":     "#795548",
 }
+# Learning agents from simplest to most capable, then the baselines (no training).
+ORDER = list(COLORS)
+BASELINES = ("random", "heuristic")
 
 DEFAULT_COLOR = "#607D8B"
 
 def color_of(algo):
     return COLORS.get(algo, DEFAULT_COLOR)
 
+def ordered(algos):
+    return sorted(algos, key=lambda a: (ORDER.index(a) if a in ORDER else len(ORDER), a))
+
 def plot_mean_ci(metrics, out_dir):
-    algos  = sorted(metrics.keys())
+    algos  = ordered(metrics.keys())
     means  = [metrics[a]["mean_reward"] for a in algos]
     ci95s  = [metrics[a]["ci95"]        for a in algos]
     colors = [color_of(a) for a in algos]
@@ -27,6 +35,14 @@ def plot_mean_ci(metrics, out_dir):
     fig, ax = plt.subplots(figsize=(10, 5))
     bars = ax.bar(algos, means, yerr=ci95s, capsize=6,
                   color=colors, alpha=0.85, edgecolor="white", linewidth=0.8)
+    for bar, a in zip(bars, algos):
+        if a in BASELINES:
+            bar.set_hatch("//")
+    n_learned = sum(a not in BASELINES for a in algos)
+    if 0 < n_learned < len(algos):
+        ax.axvline(n_learned - 0.5, color="grey", linestyle=":", linewidth=1)
+        ax.text(n_learned - 0.4, ax.get_ylim()[0] + 10, "baselines (no training)",
+                fontsize=8, color="grey", va="bottom")
     ax.axhline(200, color="green", linestyle="--", linewidth=1.5, label="Success threshold 200")
     ax.axhline(0,   color="black", linewidth=0.6)
 
@@ -36,7 +52,7 @@ def plot_mean_ci(metrics, out_dir):
                 label, ha="center", va="bottom", fontsize=8, fontweight="bold")
 
     ax.set_title("Mean reward ± 95% CI per agent (Evaluation)", fontsize=13, fontweight="bold")
-    ax.set_ylabel("Reward moyen"); ax.set_xlabel("Agent")
+    ax.set_ylabel("Mean reward"); ax.set_xlabel("Agent")
     ax.legend(); ax.grid(axis="y", alpha=0.3)
     plt.xticks(rotation=15)
     plt.tight_layout()
@@ -45,7 +61,7 @@ def plot_mean_ci(metrics, out_dir):
     print(f"  → {p}")
 
 def plot_distribution(data, out_dir):
-    algos    = sorted(data.keys())
+    algos    = ordered(data.keys())
     all_rew  = []
     labels   = []
 
@@ -74,7 +90,7 @@ def plot_distribution(data, out_dir):
     print(f"  → {p}")
 
 def plot_termination(metrics, out_dir):
-    algos  = sorted(metrics.keys())
+    algos  = ordered(metrics.keys())
     causes = set()
     for m in metrics.values():
         causes.update(m["terminations"].keys())
@@ -110,7 +126,7 @@ def plot_termination(metrics, out_dir):
     print(f"  → {p}")
 
 def plot_success_rate(metrics, out_dir):
-    algos   = sorted(metrics.keys())
+    algos   = ordered(metrics.keys())
     rates   = [metrics[a]["success_rate"] for a in algos]
     colors  = [color_of(a) for a in algos]
 
@@ -131,7 +147,7 @@ def plot_success_rate(metrics, out_dir):
 
 def plot_episode_length(data, out_dir):
     """Boxplot of episode lengths per agent."""
-    algos    = sorted(data.keys())
+    algos    = ordered(data.keys())
     all_lens = []
     labels   = []
 

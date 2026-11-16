@@ -6,4 +6,4 @@ matplotlib
 numpy
 pyyaml
 moviepy
-pytest
+pytestpandas
